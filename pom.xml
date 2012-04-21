@@ -17,6 +17,12 @@
         <enabled>false</enabled>
       </snapshots>
     </repository>
+
+    <repository>
+      <id>repo.datanucleus.org</id>
+      <url>http://www.datanucleus.org/downloads/maven2/</url>
+      <snapshots><enabled>false</enabled></snapshots>
+    </repository>
   </repositories>
 
   <dependencies>
