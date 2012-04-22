@@ -4,12 +4,19 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.sql.Types;
+
 
 import org.junit.After;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * Notice: HSQLDB is case sensitive but implicitly converts all your table names and column names to upper case
+ */
 public class JdbcSourceTest {
   Connection connection;
   static String driver = "org.hsqldb.jdbcDriver";
@@ -22,11 +29,11 @@ public class JdbcSourceTest {
       connection = DriverManager.getConnection(url);
 
       Statement stmt = connection.createStatement();
-      stmt.execute("CREATE TABLE t0 (" +
-        "a0 BIGINT," +
-        "b0 BIGINT)");
-      stmt.execute("INSERT INTO t0 VALUES (1, 2)");
-      stmt.execute("INSERT INTO t0 VALUES (3, 4)");
+      stmt.execute("CREATE TABLE T0 (" +
+        "A0 BIGINT," +
+        "B0 BIGINT)");
+      stmt.execute("INSERT INTO T0 VALUES (1, 2)");
+      stmt.execute("INSERT INTO T0 VALUES (3, 4)");
       stmt.close();
       connection.commit();
     } catch (Exception e) {
@@ -46,7 +53,7 @@ public class JdbcSourceTest {
   }
 
   @Test
-  public void testOpenAndClose() {
+  public void testOne() {
     try {
       JdbcSource source = new JdbcSource();
       source.setDriver(driver);
@@ -56,7 +63,13 @@ public class JdbcSourceTest {
       source.open();
 
       ResultSet rs = source.getResultSet();
+      HumpMetaData metaData = source.getMetaData();
       source.close();
+
+      assertTrue("Wrong columns", metaData.columnCount == 2);
+      assertEquals("Wrong column name", "A0", metaData.names[0]);
+      assertEquals("BIGINT", metaData.typeNames[0]);
+      assertEquals(Types.BIGINT, metaData.types[0]);
 
     } catch (Exception e) {
       e.printStackTrace();
