@@ -17,7 +17,7 @@ import org.junit.Test;
 /**
  * Notice: HSQLDB is case sensitive but implicitly converts all your table names and column names to upper case
  */
-public class JdbcSourceTest {
+public class TestJdbcSource {
   Connection connection;
   static String driver = "org.hsqldb.jdbcDriver";
   static String url = "jdbc:hsqldb:mem:UnitTestJdbcSource";
@@ -63,6 +63,7 @@ public class JdbcSourceTest {
       source.open();
 
       ResultSet rs = source.getResultSet();
+
       HumpMetaData metaData = source.getMetaData();
       source.close();
 
