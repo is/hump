@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.Properties;
 
 
 import org.junit.After;
@@ -67,10 +68,16 @@ public class TestJdbcSource {
       HumpMetaData metaData = source.getMetaData();
       source.close();
 
+      Properties tbl = new Properties();
+
       assertTrue("Wrong columns", metaData.columnCount == 2);
       assertEquals("Wrong column name", "A0", metaData.names[0]);
       assertEquals("BIGINT", metaData.typeNames[0]);
       assertEquals(Types.BIGINT, metaData.types[0]);
+
+      metaData.fillRCFileColumns(tbl);
+      assertEquals("A0,B0", tbl.getProperty("columns"));
+      assertEquals("bigint:bigint", tbl.getProperty("columns.types"));
 
     } catch (Exception e) {
       e.printStackTrace();
