@@ -14,6 +14,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
+import us.yuxin.hump.testutils.DBTools;
 
 /**
  * Notice: HSQLDB is case sensitive but implicitly converts all your table names and column names to upper case
@@ -28,15 +29,7 @@ public class TestJdbcSource {
     try {
       Class.forName(driver);
       connection = DriverManager.getConnection(url);
-
-      Statement stmt = connection.createStatement();
-      stmt.execute("CREATE TABLE T0 (" +
-        "A0 BIGINT," +
-        "B0 BIGINT)");
-      stmt.execute("INSERT INTO T0 VALUES (1, 2)");
-      stmt.execute("INSERT INTO T0 VALUES (3, 4)");
-      stmt.close();
-      connection.commit();
+      DBTools.initDatabase(connection, "/us/yuxin/hump/testdb/JdbcSource0.sql");
     } catch (Exception e) {
       e.printStackTrace();
       fail("Exception during HSQL database startup.");
