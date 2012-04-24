@@ -1,17 +1,24 @@
 package us.yuxin.hump;
 
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Types;
-import java.util.HashMap;
 import java.util.Properties;
 
 import com.google.common.collect.ImmutableMap;
+import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.thirdparty.guava.common.base.Joiner;
 
-public class HumpMetaData {
+public class JdbcSourceMetadata {
   public int columnCount;
   public String names[];
   public String typeNames[];
   public int types[];
+
+	public String columnNames;
+	public String columnHiveTypes;
 
 
   static ImmutableMap<Integer, String> hiveTypeMap;
@@ -60,6 +67,23 @@ public class HumpMetaData {
     this.types = new int[count];
   }
 
+	public void setJdbcSource(JdbcSource source) throws SQLException {
+		ResultSet rs = source.getResultSet();
+		if (rs == null)
+			return;
+
+		ResultSetMetaData rsmd = rs.getMetaData();
+		init(rsmd.getColumnCount());
+
+		for (int c = 0; c < this.columnCount; ++c) {
+			this.names[c] = rsmd.getColumnName(c + 1);
+			this.types[c] = rsmd.getColumnType(c + 1);
+			this.typeNames[c] = rsmd.getColumnTypeName(c + 1);
+		}
+
+		this.columnNames = Joiner.on(',').join(this.names);
+		this.columnHiveTypes = Joiner.on(':').join(getHiveTypeNames());
+	}
 
   public String[] getHiveTypeNames() {
     String hiveTypeNames[] = new String[columnCount];
@@ -71,7 +95,17 @@ public class HumpMetaData {
 
 
   public void fillRCFileColumns(Properties tbl) {
-    tbl.setProperty("columns", Joiner.on(',').join(names));
-    tbl.setProperty("columns.types", Joiner.on(':').join(getHiveTypeNames()));
+    tbl.setProperty("columns", columnNames);
+    tbl.setProperty("columns.types", columnHiveTypes);
   }
+
+
+	public void fillRCFileMetadata(SequenceFile.Metadata metadata) {
+		metadata.set(new Text("columns"), new Text(columnNames));
+		metadata.set(new Text("columns.types"), new Text(columnHiveTypes));
+	}
+
+	public int getColumnCount() {
+		return columnCount;
+	}
 }

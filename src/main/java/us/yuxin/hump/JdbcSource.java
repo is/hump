@@ -6,11 +6,8 @@ package us.yuxin.hump;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-
-import sun.net.idn.StringPrep;
 
 public class JdbcSource {
   String driver;
@@ -24,7 +21,7 @@ public class JdbcSource {
   Connection connection;
   Statement statement;
 
-  HumpMetaData metaData;
+  JdbcSourceMetadata metaData;
 
   public JdbcSource() {}
 
@@ -47,35 +44,6 @@ public class JdbcSource {
     statement.execute(query);
     resultSet = statement.getResultSet();
     return resultSet;
-  }
-
-
-  /**
-   * Return HumpMetaData about the result set
-   *
-   * @return result Hump meta data
-   */
-  public HumpMetaData getMetaData() throws SQLException {
-    if (resultSet == null) {
-      return null;
-    }
-
-    if (metaData != null) {
-      return metaData;
-    }
-
-    ResultSetMetaData rsmd = resultSet.getMetaData();
-    metaData = new HumpMetaData();
-
-    metaData.init(rsmd.getColumnCount());
-
-    for (int c = 0; c < metaData.columnCount; ++c) {
-      metaData.names[c] = rsmd.getColumnName(c + 1);
-      metaData.types[c] = rsmd.getColumnType(c + 1);
-      metaData.typeNames[c] = rsmd.getColumnTypeName(c + 1);
-    }
-
-    return metaData;
   }
 
 
@@ -152,4 +120,8 @@ public class JdbcSource {
   public Statement getStatement() {
     return statement;
   }
+
+	public boolean isReady() {
+		return (resultSet != null);
+	}
 }
