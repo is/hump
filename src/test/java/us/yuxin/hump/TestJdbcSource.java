@@ -65,7 +65,8 @@ public class TestJdbcSource {
 
       ResultSet rs = source.getResultSet();
 
-      HumpMetaData metaData = source.getMetaData();
+      JdbcSourceMetadata metaData = new JdbcSourceMetadata();
+			metaData.setJdbcSource(source);
       source.close();
 
       Properties tbl = new Properties();
