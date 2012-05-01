@@ -15,6 +15,7 @@ public class HumpMapper extends Mapper<Text, Text, Text, NullWritable> {
 
   @Override
   protected void map(Text key, Text value, Context context) throws IOException, InterruptedException {
+    System.out.println("HumpMapper.map");
     task.run(context, key, value);
   }
 
@@ -36,11 +37,6 @@ public class HumpMapper extends Mapper<Text, Text, Text, NullWritable> {
       e.printStackTrace();
       throw new IOException("Can't load hump task class", e);
     }
-  }
-
-  @Override
-  public void run(Context context) throws IOException, InterruptedException {
-    super.run(context);
   }
 
   @Override
