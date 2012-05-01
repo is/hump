@@ -10,6 +10,8 @@ import com.hazelcast.core.Hazelcast;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.filecache.DistributedCache;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -80,9 +82,15 @@ public class Hump extends Configured implements Tool {
   private void runJob() throws IOException, ClassNotFoundException, InterruptedException {
     Configuration conf = getConf();
 
-    DistributedCache.addArchiveToClassPath(new Path("/is/app/hump/lib/hazelcast-2.0.3.jar"), conf);
-    DistributedCache.addArchiveToClassPath(new Path("/is/app/hump/lib/mysql-connector-java-5.1.19.jar"), conf);
-    DistributedCache.addArchiveToClassPath(new Path("/is/app/hump/lib/hazelcast-client-2.0.3.jar"), conf);
+    // TODO list dir and add jars
+    FileSystem fs = FileSystem.get(conf);
+
+    FileStatus[] fileStatuses = fs.listStatus(new Path("/is/app/hump/lib/*.jar"));
+
+    for (FileStatus fileStatus: fileStatuses) {
+      DistributedCache.addArchiveToClassPath(fileStatus.getPath(), conf);
+    }
+    fs.close();
 
     for (int i = 0; i < HUMP_TASK_PARALLEL * 5; ++i ) {
       taskQueue.put("{\"id\": "+ Integer.toString(i) + "}");
