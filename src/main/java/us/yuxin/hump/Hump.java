@@ -47,6 +47,9 @@ public class Hump extends Configured implements Tool {
 
   private void gridInit() {
     Configuration conf = getConf();
+    conf.setIfUnset(CONF_HUMP_HAZELCAST_GROUP, HUMP_HAZELCAST_GROUP);
+    conf.setIfUnset(CONF_HUMP_HAZELCAST_PASSWORD, HUMP_HAZELCAST_PASSWORD);
+
     Config cfg = new Config();
 
     cfg.setGroupConfig(new GroupConfig(
@@ -84,8 +87,7 @@ public class Hump extends Configured implements Tool {
     }
 
     conf.setInt(CONF_HUMP_TASKS, HUMP_TASK_PARALLEL);
-    conf.setIfUnset(CONF_HUMP_HAZELCAST_GROUP, HUMP_HAZELCAST_GROUP);
-    conf.setIfUnset(CONF_HUMP_HAZELCAST_PASSWORD, HUMP_HAZELCAST_PASSWORD);
+
 
     Job job = new Job(conf);
 
