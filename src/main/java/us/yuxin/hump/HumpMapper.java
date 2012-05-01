@@ -2,13 +2,15 @@ package us.yuxin.hump;
 
 import java.io.IOException;
 
-import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-public class HumpMapper extends Mapper<LongWritable, Text, LongWritable, Text> {
+public class HumpMapper extends Mapper<Text, Text, Text, NullWritable> {
+
   @Override
-  public void run(Context context) throws IOException, InterruptedException {
-    System.out.println(context.getTaskAttemptID());
+  protected void cleanup(Context context) throws IOException, InterruptedException {
+    super.cleanup(context);
+    System.out.println("Hello World - tid:" + context.getTaskAttemptID());
   }
 }
