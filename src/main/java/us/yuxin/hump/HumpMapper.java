@@ -9,6 +9,11 @@ import org.apache.hadoop.mapreduce.Mapper;
 public class HumpMapper extends Mapper<Text, Text, Text, NullWritable> {
 
   @Override
+  protected void map(Text key, Text value, Context context) throws IOException, InterruptedException {
+    System.out.println("key:" + key.toString() + ", value:" + value.toString());
+  }
+
+  @Override
   protected void cleanup(Context context) throws IOException, InterruptedException {
     super.cleanup(context);
     System.out.println("clean up Hello World - tid:" + context.getTaskAttemptID());
