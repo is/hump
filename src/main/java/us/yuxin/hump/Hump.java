@@ -61,7 +61,7 @@ public class Hump extends Configured implements Tool {
     Hazelcast.init(cfg);
 
     InetSocketAddress addr = Hazelcast.getCluster().getLocalMember().getInetSocketAddress();
-    conf.set(CONF_HUMP_HAZELCAST_ENDPOINT, addr.getAddress().toString() + ":" + addr.getPort());
+    conf.set(CONF_HUMP_HAZELCAST_ENDPOINT, addr.getAddress().toString().substring(1) + ":" + addr.getPort());
 
     taskQueue = Hazelcast.getQueue(HUMP_HAZELCAST_TASK_QUEUE);
     feedbackQueue = Hazelcast.getQueue(HUMP_HAZELCAST_FEEDBACK_QUEUE);
