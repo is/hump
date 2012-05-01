@@ -13,6 +13,7 @@ public class HumpMapper extends Mapper<Text, Text, Text, NullWritable> {
   @Override
   protected void map(Text key, Text value, Context context) throws IOException, InterruptedException {
     System.out.println("key:" + key.toString() + ", value:" + value.toString());
+    Thread.sleep(1000);
   }
 
   @Override
@@ -35,7 +36,6 @@ public class HumpMapper extends Mapper<Text, Text, Text, NullWritable> {
 
   @Override
   public void run(Context context) throws IOException, InterruptedException {
-    log.info("HumpMapper.run");
     super.run(context);
   }
 
