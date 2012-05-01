@@ -11,6 +11,6 @@ public class HumpMapper extends Mapper<Text, Text, Text, NullWritable> {
   @Override
   protected void cleanup(Context context) throws IOException, InterruptedException {
     super.cleanup(context);
-    System.out.println("Hello World - tid:" + context.getTaskAttemptID());
+    System.out.println("clean up Hello World - tid:" + context.getTaskAttemptID());
   }
 }
