@@ -16,12 +16,14 @@ public class HumpTaskRecordReader extends RecordReader<Text, Text> {
   HazelcastClient client;
   BlockingQueue<String> jobQueue;
   TaskAttemptContext context;
+  int serial;
 
   private Text curKey;
   private Text curValue;
+
   @Override
   public void initialize(InputSplit split, TaskAttemptContext context) throws IOException, InterruptedException {
-    System.out.println("HumpTaskRecordReader.initialize");
+    serial = 0;
     Configuration conf = context.getConfiguration();
 
     ClientConfig cfg = new ClientConfig();
@@ -40,8 +42,10 @@ public class HumpTaskRecordReader extends RecordReader<Text, Text> {
     if (job.equals("STOP"))
       return false;
 
-    curKey = new Text(job);
-    curValue = curKey;
+    curKey = new Text(Integer.toString(serial));
+    curValue = new Text(job);
+    serial += 1;
+
     return true;
   }
 

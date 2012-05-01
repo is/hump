@@ -20,6 +20,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 // TODO Hazelcast default configuration file.
+// TODO Counter Implement.
 
 public class Hump extends Configured implements Tool {
   public static final String HUMP_HAZELCAST_GROUP = "hump";
