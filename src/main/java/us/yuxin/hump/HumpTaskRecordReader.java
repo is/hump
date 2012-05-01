@@ -17,7 +17,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 public class HumpTaskRecordReader extends RecordReader<Text, Text> {
   @Override
   public void initialize(InputSplit split, TaskAttemptContext context) throws IOException, InterruptedException {
-    //To change body of implemented methods use File | Settings | File Templates.
+    System.out.println("HumpTaskRecordReader.initialize");
   }
 
   @Override
