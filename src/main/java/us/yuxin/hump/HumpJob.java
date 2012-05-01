@@ -43,7 +43,7 @@ public class HumpJob {
     InetSocketAddress addr = member.getInetSocketAddress();
     BlockingQueue<String> taskQueue = Hazelcast.getQueue(HUMP_QUEUE_TASK);
 
-    for (int i = 0; i < parallelTasks * 2; ++i ) {
+    for (int i = 0; i < parallelTasks * 5; ++i ) {
       taskQueue.put(Integer.toString(i));
     }
 
@@ -54,7 +54,7 @@ public class HumpJob {
     conf.setBoolean("mapred.map.tasks.speculative.execution", false);
     conf.setBoolean("mapred.reduce.tasks.speculative.execution", false);
 
-    conf.setInt(CONF_HUMP_TASKS, 22);
+    conf.setInt(CONF_HUMP_TASKS, parallelTasks);
     conf.set(CONF_HUMP_HAZELCAST_ENDPOINT, addr.getAddress().getHostAddress() + ":" + addr.getPort());
 
     Job job = new Job(conf);
