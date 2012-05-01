@@ -25,11 +25,11 @@ public class HumpTaskRecordReader extends RecordReader<Text, Text> {
     Configuration conf = context.getConfiguration();
 
     ClientConfig cfg = new ClientConfig();
-    cfg.setGroupConfig(new GroupConfig("hump", "humps"));
-    cfg.addAddress(conf.get(HumpJob.CONF_HUMP_HAZELCAST_ENDPOINT));
+    cfg.setGroupConfig(new GroupConfig(conf.get(Hump.CONF_HUMP_HAZELCAST_GROUP), conf.get(Hump.CONF_HUMP_HAZELCAST_PASSWORD)));
+    cfg.addAddress(conf.get(Hump.CONF_HUMP_HAZELCAST_ENDPOINT));
 
     client = HazelcastClient.newHazelcastClient(cfg);
-    jobQueue = client.getQueue(HumpJob.HUMP_QUEUE_TASK);
+    jobQueue = client.getQueue(Hump.HUMP_HAZELCAST_TASK_QUEUE);
 
     this.context = context;
   }

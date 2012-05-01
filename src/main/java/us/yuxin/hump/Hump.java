@@ -27,9 +27,11 @@ public class Hump extends Configured implements Tool {
   public static final String HUMP_HAZELCAST_TASK_QUEUE = "hump.task.queue";
   public static final String HUMP_HAZELCAST_FEEDBACK_QUEUE = "hump.feedback.queue";
 
-  public static final int DEFAULT_HUMP_TASK_PARALLEL = 20;
+  public static final int HUMP_TASK_PARALLEL = 20;
 
   public static final String CONF_HUMP_HAZELCAST_ENDPOINT = "hump.hazelcast.endpoint";
+  public static final String CONF_HUMP_HAZELCAST_GROUP = "hump.hazelcast.group";
+  public static final String CONF_HUMP_HAZELCAST_PASSWORD = "hump.hazelcast.password";
   public static final String CONF_HUMP_TASKS = "hump.tasks";
 
   BlockingQueue<String> taskQueue;
@@ -44,13 +46,16 @@ public class Hump extends Configured implements Tool {
 
 
   private void gridInit() {
+    Configuration conf = getConf();
     Config cfg = new Config();
-    cfg.setGroupConfig(new GroupConfig(HUMP_HAZELCAST_GROUP, HUMP_HAZELCAST_PASSWORD));
+
+    cfg.setGroupConfig(new GroupConfig(
+      conf.get(CONF_HUMP_HAZELCAST_GROUP),
+      conf.get(CONF_HUMP_HAZELCAST_PASSWORD)));
     cfg.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
     Hazelcast.init(cfg);
 
     InetSocketAddress addr = Hazelcast.getCluster().getLocalMember().getInetSocketAddress();
-    Configuration conf = getConf();
     conf.set(CONF_HUMP_HAZELCAST_ENDPOINT, addr.getAddress().toString() + ":" + addr.getPort());
 
     taskQueue = Hazelcast.getQueue(HUMP_HAZELCAST_TASK_QUEUE);
@@ -70,15 +75,17 @@ public class Hump extends Configured implements Tool {
     DistributedCache.addArchiveToClassPath(new Path("/is/app/hump/lib/mysql-connector-java-5.1.19.jar"), conf);
     DistributedCache.addArchiveToClassPath(new Path("/is/app/hump/lib/hazelcast-client-2.0.3.jar"), conf);
 
-    for (int i = 0; i < DEFAULT_HUMP_TASK_PARALLEL * 5; ++i ) {
+    for (int i = 0; i < HUMP_TASK_PARALLEL * 5; ++i ) {
       taskQueue.put(Integer.toString(i));
     }
 
-    for (int i = 0; i < DEFAULT_HUMP_TASK_PARALLEL; ++i) {
+    for (int i = 0; i < HUMP_TASK_PARALLEL; ++i) {
       taskQueue.put("STOP");
     }
 
-    conf.setInt(CONF_HUMP_TASKS, DEFAULT_HUMP_TASK_PARALLEL);
+    conf.setInt(CONF_HUMP_TASKS, HUMP_TASK_PARALLEL);
+    conf.setIfUnset(CONF_HUMP_HAZELCAST_GROUP, HUMP_HAZELCAST_GROUP);
+    conf.setIfUnset(CONF_HUMP_HAZELCAST_PASSWORD, HUMP_HAZELCAST_PASSWORD);
 
     Job job = new Job(conf);
 
