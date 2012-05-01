@@ -7,8 +7,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 
 
 public class HumpDumpTask implements HumpTask {
@@ -38,16 +38,9 @@ public class HumpDumpTask implements HumpTask {
   @Override
   public void run(Mapper.Context context, Text serial, Text taskInfo) throws IOException, InterruptedException {
     System.out.println("HumpDumpTask.run -- " + serial.toString() + ":" + taskInfo.toString());
-
-    JSONObject obj;
-    try {
-      obj = new JSONObject(taskInfo.toString());
-      System.out.println(obj.getInt("id"));
-
-    } catch (JSONException e) {
-      e.printStackTrace();
-      throw new IOException("Invalid json task info", e);
-    }
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode rootNode = mapper.readValue(taskInfo.toString(), JsonNode.class);
+    System.out.println("ID:" + rootNode.get("id").getIntValue());
     Thread.sleep(1500);
   }
 
