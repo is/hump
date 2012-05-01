@@ -36,6 +36,7 @@ public class Hump extends Configured implements Tool {
   public static final String CONF_HUMP_HAZELCAST_PASSWORD = "hump.hazelcast.password";
   public static final String CONF_HUMP_TASKS = "hump.tasks";
   public static final String CONF_HUMP_TASK_CLASS = "hump.task.class";
+  public static final String CONF_HUMP_COMPRESSION_CODEC = "hump.compression.codec";
 
   BlockingQueue<String> taskQueue;
   BlockingQueue<String> feedbackQueue;
@@ -84,7 +85,7 @@ public class Hump extends Configured implements Tool {
     DistributedCache.addArchiveToClassPath(new Path("/is/app/hump/lib/hazelcast-client-2.0.3.jar"), conf);
 
     for (int i = 0; i < HUMP_TASK_PARALLEL * 5; ++i ) {
-      taskQueue.put(Integer.toString(i));
+      taskQueue.put("{\"id\": "+ Integer.toString(i) + "}");
     }
 
     for (int i = 0; i < HUMP_TASK_PARALLEL; ++i) {
