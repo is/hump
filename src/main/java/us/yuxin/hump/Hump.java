@@ -21,6 +21,7 @@ import org.apache.hadoop.util.ToolRunner;
 
 // TODO Hazelcast default configuration file.
 // TODO Counter Implement.
+// TODO Hazelcast Logging configuration.
 
 public class Hump extends Configured implements Tool {
   public static final String HUMP_HAZELCAST_GROUP = "hump";
@@ -34,6 +35,7 @@ public class Hump extends Configured implements Tool {
   public static final String CONF_HUMP_HAZELCAST_GROUP = "hump.hazelcast.group";
   public static final String CONF_HUMP_HAZELCAST_PASSWORD = "hump.hazelcast.password";
   public static final String CONF_HUMP_TASKS = "hump.tasks";
+  public static final String CONF_HUMP_TASK_CLASS = "hump.task.class";
 
   BlockingQueue<String> taskQueue;
   BlockingQueue<String> feedbackQueue;
@@ -90,7 +92,7 @@ public class Hump extends Configured implements Tool {
     }
 
     conf.setInt(CONF_HUMP_TASKS, HUMP_TASK_PARALLEL);
-
+    conf.set(CONF_HUMP_TASK_CLASS, "us.yuxin.hump.HumpDumpTask");
 
     Job job = new Job(conf);
 
