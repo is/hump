@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.BlockingQueue;
 
+import com.hazelcast.config.Config;
+import com.hazelcast.config.GroupConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.Member;
 import org.apache.hadoop.conf.Configuration;
@@ -17,8 +19,7 @@ import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
 
 public class HumpJob {
   public static final String CONF_HUMP_TASKS = "hump.tasks";
-  public static final String CONF_HUMP_HAZELCAST_ADDRESS = "hump.hazelcast.addr";
-  public static final String CONF_HUMP_HAZELCAST_PORT = "hump.hazelcast.port";
+  public static final String CONF_HUMP_HAZELCAST_ENDPOINT = "hump.hazelcast.endpoint";
 
   public static final String HUMP_QUEUE_TASK = "hump.queue.task";
   // public static final String HUMP_QUEUE_RESULT = "hump.queue.result";
@@ -33,6 +34,10 @@ public class HumpJob {
     DistributedCache.addArchiveToClassPath(new Path("/is/app/hump/lib/hazelcast-2.0.3.jar"), conf);
     DistributedCache.addArchiveToClassPath(new Path("/is/app/hump/lib/mysql-connector-java-5.1.19.jar"), conf);
     DistributedCache.addArchiveToClassPath(new Path("/is/app/hump/lib/hazelcast-client-2.0.3.jar"), conf);
+
+    Config hcfg = new Config();
+    hcfg.setGroupConfig(new GroupConfig("hump", "humps"));
+    Hazelcast.init(hcfg);
 
     Member member = Hazelcast.getCluster().getLocalMember();
     InetSocketAddress addr = member.getInetSocketAddress();
@@ -50,8 +55,7 @@ public class HumpJob {
     conf.setBoolean("mapred.reduce.tasks.speculative.execution", false);
 
     conf.setInt(CONF_HUMP_TASKS, 22);
-    conf.set(CONF_HUMP_HAZELCAST_ADDRESS, addr.getAddress().getHostAddress());
-    conf.setInt(CONF_HUMP_HAZELCAST_PORT, addr.getPort());
+    conf.set(CONF_HUMP_HAZELCAST_ENDPOINT, addr.getAddress().getHostAddress() + ":" + addr.getPort());
 
     Job job = new Job(conf);
 
