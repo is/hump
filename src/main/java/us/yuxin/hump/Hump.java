@@ -55,7 +55,9 @@ public class Hump extends Configured implements Tool {
     cfg.setGroupConfig(new GroupConfig(
       conf.get(CONF_HUMP_HAZELCAST_GROUP),
       conf.get(CONF_HUMP_HAZELCAST_PASSWORD)));
+
     cfg.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
+    cfg.getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(true);
     Hazelcast.init(cfg);
 
     InetSocketAddress addr = Hazelcast.getCluster().getLocalMember().getInetSocketAddress();
