@@ -27,7 +27,7 @@ public class HumpInputFormat extends InputFormat<Text, Text> {
 
     ArrayList<InputSplit> splits = new ArrayList<InputSplit>();
     for (int i = 0; i < parallel; ++i) {
-      HumpInputSplit split = new HumpInputSplit(i);
+      EmptySplit split = new EmptySplit();
       splits.add(split);
     }
     return splits;
