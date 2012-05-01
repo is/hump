@@ -8,7 +8,6 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
 
 public class HumpJob {
@@ -17,6 +16,7 @@ public class HumpJob {
 
     conf.setBoolean("mapred.map.tasks.speculative.execution", false);
     conf.setBoolean("mapred.reduce.tasks.speculative.execution", false);
+    conf.setInt("hump.task.parallel", 222);
     Job job = new Job(conf);
 
     job.setJobName("Hump-Sample");
