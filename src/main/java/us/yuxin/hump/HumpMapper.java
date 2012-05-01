@@ -2,11 +2,14 @@ package us.yuxin.hump;
 
 import java.io.IOException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 public class HumpMapper extends Mapper<Text, Text, Text, NullWritable> {
+  private static Log log = LogFactory.getLog(HumpMapper.class);
 
   @Override
   protected void map(Text key, Text value, Context context) throws IOException, InterruptedException {
@@ -17,6 +20,7 @@ public class HumpMapper extends Mapper<Text, Text, Text, NullWritable> {
   protected void setup(Context context) throws IOException, InterruptedException {
     super.setup(context);
     System.out.println("HumpMapper.setup");
+    log.info("HumpMapper.setup");
   }
 
   public HumpMapper() {
@@ -26,6 +30,7 @@ public class HumpMapper extends Mapper<Text, Text, Text, NullWritable> {
 
   @Override
   public void run(Context context) throws IOException, InterruptedException {
+    log.info("HumpMapper.run");
     super.run(context);
   }
 
