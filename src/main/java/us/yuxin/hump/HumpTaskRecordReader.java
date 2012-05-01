@@ -18,6 +18,7 @@ public class HumpTaskRecordReader extends RecordReader<Text, Text> {
 
   @Override
   public boolean nextKeyValue() throws IOException, InterruptedException {
+    System.out.println("HumpTaskRecordReader.nexKeyValue:" + first);
     if (first) {
       first = false;
       return true;
