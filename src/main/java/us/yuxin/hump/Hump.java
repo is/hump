@@ -85,10 +85,12 @@ public class Hump extends Configured implements Tool {
     // TODO list dir and add jars
     FileSystem fs = FileSystem.get(conf);
 
-    FileStatus[] fileStatuses = fs.listStatus(new Path("/is/app/hump/lib/*.jar"));
+    FileStatus[] fileStatuses = fs.listStatus(new Path("/is/app/hump/lib"));
 
     for (FileStatus fileStatus: fileStatuses) {
-      DistributedCache.addArchiveToClassPath(fileStatus.getPath(), conf);
+      if (fileStatus.getPath().toString().endsWith(".jar")) {
+        DistributedCache.addArchiveToClassPath(fileStatus.getPath(), conf);
+      }
     }
     fs.close();
 
