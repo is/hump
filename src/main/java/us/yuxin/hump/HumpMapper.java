@@ -18,6 +18,12 @@ public class HumpMapper extends Mapper<Text, Text, Text, NullWritable> {
   @Override
   protected void setup(Context context) throws IOException, InterruptedException {
     super.setup(context);
+    try {
+      Class.forName("com.mysql.jdbc.driver");
+    } catch (ClassNotFoundException e) {
+      e.printStackTrace();
+      throw new IOException("Can't load jdbc driver", e);
+    }
     System.out.println("HumpMapper.setup");
     log.info("HumpMapper.setup");
   }
