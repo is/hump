@@ -9,7 +9,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 public class HumpMapper extends Mapper<Text, Text, Text, NullWritable> {
-  private static Log log = null;
+  private static Log log = LogFactory.getLog(HumpMapper.class);
   @Override
   protected void map(Text key, Text value, Context context) throws IOException, InterruptedException {
     System.out.println("key:" + key.toString() + ", value:" + value.toString());

@@ -24,6 +24,7 @@ public class HumpJob {
 
     job.setJobName("Hump-Sample");
     job.setJarByClass(HumpMapper.class);
+    job.setMapperClass(HumpMapper.class);
 
     job.setMapOutputKeyClass(Text.class);
     job.setMapOutputValueClass(NullWritable.class);
