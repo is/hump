@@ -14,6 +14,22 @@ public class HumpMapper extends Mapper<Text, Text, Text, NullWritable> {
   }
 
   @Override
+  protected void setup(Context context) throws IOException, InterruptedException {
+    super.setup(context);
+    System.out.println("HumpMapper.setup");
+  }
+
+  public HumpMapper() {
+    super();
+    System.out.println("HumpMapper.HumpMapper");
+  }
+
+  @Override
+  public void run(Context context) throws IOException, InterruptedException {
+    super.run(context);
+  }
+
+  @Override
   protected void cleanup(Context context) throws IOException, InterruptedException {
     super.cleanup(context);
     System.out.println("clean up Hello World - tid:" + context.getTaskAttemptID());
