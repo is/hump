@@ -20,6 +20,7 @@ public class HumpJob {
     Job job = new Job(conf);
 
     job.setJobName("Hump-Sample");
+    job.setJarByClass(HumpMapper.class);
 
     job.setMapOutputKeyClass(Text.class);
     job.setMapOutputValueClass(NullWritable.class);
@@ -28,7 +29,7 @@ public class HumpJob {
     job.setInputFormatClass(HumpInputFormat.class);
     FileInputFormat.addInputPath(job, new Path("ignored"));
 
-    job.setJarByClass(HumpMapper.class);
+    job.setNumReduceTasks(0);
     job.waitForCompletion(true);
   }
 }
