@@ -13,7 +13,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 public class HumpDumpTask implements HumpTask {
   FileSystem fs;
-  // RCFileStore store;
+  RCFileStore store;
 
   @Override
   public void setup(Mapper.Context context)  throws IOException, InterruptedException {
@@ -32,7 +32,7 @@ public class HumpDumpTask implements HumpTask {
         throw new IOException("Invalid compression codec", e);
       }
     }
-    // store = new RCFileStore(fs, conf, codec);
+    store = new RCFileStore(fs, conf, codec);
   }
 
   @Override
