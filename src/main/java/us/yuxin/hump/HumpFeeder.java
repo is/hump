@@ -16,7 +16,6 @@ import org.codehaus.jackson.node.ObjectNode;
 public class HumpFeeder implements Runnable {
   private int parallel;
 
-  private ObjectMapper mapper;
   private BlockingQueue<String> taskQueue;
   private BlockingQueue<String> feedbackQueue;
   private Configuration conf;
@@ -35,6 +34,7 @@ public class HumpFeeder implements Runnable {
   }
 
   private void setupSources(File[] sources) {
+    ObjectMapper mapper = new ObjectMapper();
     tasks = new LinkedList<String>();
 
     for (File source : sources) {
