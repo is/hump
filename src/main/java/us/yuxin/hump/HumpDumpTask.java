@@ -10,7 +10,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
 
 
@@ -20,14 +19,14 @@ public class HumpDumpTask implements HumpTask {
   Configuration conf;
 
   @Override
-  public void setup(Mapper.Context context)  throws IOException, InterruptedException {
+  public void setup(Mapper.Context context) throws IOException, InterruptedException {
     conf = context.getConfiguration();
     fs = FileSystem.get(context.getConfiguration());
     CompressionCodec codec = null;
 
     if (conf.get(Hump.CONF_HUMP_COMPRESSION_CODEC) != null) {
       try {
-        codec = (CompressionCodec)conf.getClass(Hump.CONF_HUMP_COMPRESSION_CODEC, null).newInstance();
+        codec = (CompressionCodec) conf.getClass(Hump.CONF_HUMP_COMPRESSION_CODEC, null).newInstance();
       } catch (InstantiationException e) {
         e.printStackTrace();
         throw new IOException("Invalid compression codec", e);
@@ -61,11 +60,16 @@ public class HumpDumpTask implements HumpTask {
     }
 
     String target = root.get("target").getTextValue();
-    store.store(new Path(target), source, null);
     try {
+      source.open();
+      store.store(new Path(target), source, null);
       source.close();
     } catch (SQLException e) {
       e.printStackTrace();
+      // TODO Exception handler
+    } catch (ClassNotFoundException e) {
+      e.printStackTrace();
+      // TODO Exception handler
     }
 
     System.out.println("OK...");
@@ -76,7 +80,7 @@ public class HumpDumpTask implements HumpTask {
   }
 
   @Override
-  public void cleanup(Mapper.Context context) throws IOException, InterruptedException  {
+  public void cleanup(Mapper.Context context) throws IOException, InterruptedException {
     fs.close();
   }
 }
