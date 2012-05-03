@@ -60,7 +60,12 @@ public class RCFileStore implements Store {
     try {
       while (rs.next()) {
         for (int c = 0; c < columns; ++c) {
-          Object value = rs.getObject(c + 1);
+          Object value;
+          try {
+            value = rs.getObject(c + 1);
+          } catch (SQLException e) {
+            throw new IOException("Failed to fetch data from JDBC source, column is "  + jdbcMetadata.names[c] + "/" + c, e);
+          }
           bytes.set(c, valueToBytesRef(value, types[c]));
         }
         writer.append(bytes);
