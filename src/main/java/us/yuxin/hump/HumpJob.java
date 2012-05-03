@@ -43,7 +43,7 @@ public class HumpJob {
     InetSocketAddress addr = member.getInetSocketAddress();
     BlockingQueue<String> taskQueue = Hazelcast.getQueue(HUMP_QUEUE_TASK);
 
-    for (int i = 0; i < parallelTasks * 5; ++i ) {
+    for (int i = 0; i < parallelTasks * 5; ++i) {
       taskQueue.put(Integer.toString(i));
     }
 

@@ -17,8 +17,8 @@ public class JdbcSourceMetadata {
   public String typeNames[];
   public int types[];
 
-	public String columnNames;
-	public String columnHiveTypes;
+  public String columnNames;
+  public String columnHiveTypes;
 
 
   static ImmutableMap<Integer, String> hiveTypeMap;
@@ -68,23 +68,23 @@ public class JdbcSourceMetadata {
     this.types = new int[count];
   }
 
-	public void setJdbcSource(JdbcSource source) throws SQLException {
-		ResultSet rs = source.getResultSet();
-		if (rs == null)
-			return;
+  public void setJdbcSource(JdbcSource source) throws SQLException {
+    ResultSet rs = source.getResultSet();
+    if (rs == null)
+      return;
 
-		ResultSetMetaData rsmd = rs.getMetaData();
-		init(rsmd.getColumnCount());
+    ResultSetMetaData rsmd = rs.getMetaData();
+    init(rsmd.getColumnCount());
 
-		for (int c = 0; c < this.columnCount; ++c) {
-			this.names[c] = rsmd.getColumnName(c + 1);
-			this.types[c] = rsmd.getColumnType(c + 1);
-			this.typeNames[c] = rsmd.getColumnTypeName(c + 1);
-		}
+    for (int c = 0; c < this.columnCount; ++c) {
+      this.names[c] = rsmd.getColumnName(c + 1);
+      this.types[c] = rsmd.getColumnType(c + 1);
+      this.typeNames[c] = rsmd.getColumnTypeName(c + 1);
+    }
 
-		this.columnNames = Joiner.on(',').join(this.names);
-		this.columnHiveTypes = Joiner.on(':').join(getHiveTypeNames());
-	}
+    this.columnNames = Joiner.on(',').join(this.names);
+    this.columnHiveTypes = Joiner.on(':').join(getHiveTypeNames());
+  }
 
   public String[] getHiveTypeNames() {
     String hiveTypeNames[] = new String[columnCount];
@@ -104,12 +104,12 @@ public class JdbcSourceMetadata {
   }
 
 
-	public void fillRCFileMetadata(SequenceFile.Metadata metadata) {
-		metadata.set(new Text("columns"), new Text(columnNames));
-		metadata.set(new Text("columns.types"), new Text(columnHiveTypes));
-	}
+  public void fillRCFileMetadata(SequenceFile.Metadata metadata) {
+    metadata.set(new Text("columns"), new Text(columnNames));
+    metadata.set(new Text("columns.types"), new Text(columnHiveTypes));
+  }
 
-	public int getColumnCount() {
-		return columnCount;
-	}
+  public int getColumnCount() {
+    return columnCount;
+  }
 }

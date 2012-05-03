@@ -3,6 +3,7 @@ package us.yuxin.hump;
 /**
  * Author: scaner@gmail.com
  */
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -23,7 +24,8 @@ public class JdbcSource {
 
   JdbcSourceMetadata metaData;
 
-  public JdbcSource() {}
+  public JdbcSource() {
+  }
 
   /**
    * Open database connection and return query result resultSet.
@@ -121,7 +123,7 @@ public class JdbcSource {
     return statement;
   }
 
-	public boolean isReady() {
-		return (resultSet != null);
-	}
+  public boolean isReady() {
+    return (resultSet != null);
+  }
 }
