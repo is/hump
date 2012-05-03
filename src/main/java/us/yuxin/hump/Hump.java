@@ -45,15 +45,15 @@ public class Hump extends Configured implements Tool {
   BlockingQueue<String> taskQueue;
   BlockingQueue<String> feedbackQueue;
 
-	String argv[];
-	HumpFeeder feeder;
-	Thread feederThread;
+  String argv[];
+  HumpFeeder feeder;
+  Thread feederThread;
 
   public int run(String[] argv) throws Exception {
-		this.argv = argv;
+    this.argv = argv;
 
     gridInit();
-		feederInit();
+    feederInit();
     runJob();
     gridShutdown();
 
@@ -84,7 +84,7 @@ public class Hump extends Configured implements Tool {
   }
 
 
-	private void feederInit() throws IOException {
+  private void feederInit() throws IOException {
     Configuration conf = getConf();
     File sources[];
 
@@ -93,18 +93,18 @@ public class Hump extends Configured implements Tool {
       for (int i = 0; i < sources.length; ++i)
         sources[i] = new File(argv[i]);
     } else {
-      sources = new File[] { new File("hump-tasks.json")};
+      sources = new File[]{new File("hump-tasks.json")};
     }
 
-		feeder = new HumpFeeder();
-		feeder.setup(conf, sources, taskQueue, feedbackQueue,
-			conf.getInt(CONF_HUMP_TASKS, HUMP_TASKS));
+    feeder = new HumpFeeder();
+    feeder.setup(conf, sources, taskQueue, feedbackQueue,
+      conf.getInt(CONF_HUMP_TASKS, HUMP_TASKS));
 
-		feederThread = new Thread(feeder);
-		feederThread.setDaemon(true);
-		feederThread.setName("Hump Feeder");
-		feederThread.start();
-	}
+    feederThread = new Thread(feeder);
+    feederThread.setDaemon(true);
+    feederThread.setName("Hump Feeder");
+    feederThread.start();
+  }
 
 
   private void gridShutdown() {
@@ -118,7 +118,7 @@ public class Hump extends Configured implements Tool {
     FileSystem fs = FileSystem.get(conf);
     FileStatus[] fileStatuses = fs.listStatus(new Path("/is/app/hump/lib"));
 
-    for (FileStatus fileStatus: fileStatuses) {
+    for (FileStatus fileStatus : fileStatuses) {
       if (fileStatus.getPath().toString().endsWith(".jar")) {
         DistributedCache.addArchiveToClassPath(fileStatus.getPath(), conf);
       }
@@ -143,11 +143,11 @@ public class Hump extends Configured implements Tool {
   }
 
   public static void main(String[] args) throws Exception {
-		Configuration conf = new Configuration();
+    Configuration conf = new Configuration();
 
-		// Set default configuration.
-		conf.set(CONF_HUMP_TASK_CLASS, "us.yuxin.hump.HumpDumpTask");
-		conf.setInt(CONF_HUMP_TASKS, HUMP_TASKS);
+    // Set default configuration.
+    conf.set(CONF_HUMP_TASK_CLASS, "us.yuxin.hump.HumpDumpTask");
+    conf.setInt(CONF_HUMP_TASKS, HUMP_TASKS);
     conf.setBoolean(CONF_HUMP_TASK_SHUFFLE, true);
 
     int res = ToolRunner.run(conf, new Hump(), args);

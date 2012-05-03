@@ -7,11 +7,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
-import com.google.common.collect.Lists;
 import org.apache.hadoop.conf.Configuration;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ObjectNode;
 
 public class HumpFeeder implements Runnable {
   private int parallel;
@@ -40,7 +38,7 @@ public class HumpFeeder implements Runnable {
     for (File source : sources) {
       try {
         JsonNode root = mapper.readValue(source, JsonNode.class);
-        for (JsonNode node: root) {
+        for (JsonNode node : root) {
           tasks.add(mapper.writeValueAsString(node));
         }
       } catch (IOException e) {
@@ -65,7 +63,7 @@ public class HumpFeeder implements Runnable {
   */
 
   public void run() {
-    for (String task: tasks) {
+    for (String task : tasks) {
       taskQueue.offer(task);
     }
     for (int i = 0; i < parallel; ++i) {
