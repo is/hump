@@ -23,7 +23,7 @@ public class HumpInputFormat extends InputFormat<Text, Text> {
 
   @Override
   public List<InputSplit> getSplits(JobContext context) throws IOException, InterruptedException {
-    parallel = context.getConfiguration().getInt(HumpJob.CONF_HUMP_TASKS, DEFAULT_TASK_PARALLEL);
+    parallel = context.getConfiguration().getInt(Hump.CONF_HUMP_TASKS, DEFAULT_TASK_PARALLEL);
 
     ArrayList<InputSplit> splits = new ArrayList<InputSplit>();
     for (int i = 0; i < parallel; ++i) {
