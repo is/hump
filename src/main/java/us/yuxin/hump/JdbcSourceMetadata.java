@@ -6,10 +6,10 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Properties;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.thirdparty.guava.common.base.Joiner;
+import org.apache.hadoop.thirdparty.guava.common.collect.ImmutableMap;
 
 public class JdbcSourceMetadata {
   public int columnCount;
