@@ -48,6 +48,7 @@ public class JdbcSourceMetadata {
       .put(Types.LONGVARCHAR, "string")
       .put(Types.NVARCHAR, "string")
       .put(Types.NCHAR, "string")
+      .put(Types.CHAR, "string")
       .put(Types.LONGNVARCHAR, "string")
       .put(Types.CLOB, "string")
 
@@ -89,6 +90,9 @@ public class JdbcSourceMetadata {
     String hiveTypeNames[] = new String[columnCount];
     for (int c = 0; c < columnCount; ++c) {
       hiveTypeNames[c] = hiveTypeMap.get(types[c]);
+      if (hiveTypeNames[c] == null) {
+        throw new RuntimeException("Invalid SQL data type" + types[c]);
+      }
     }
     return hiveTypeNames;
   }
