@@ -32,20 +32,20 @@ public class Hump extends Configured implements Tool {
   public static final String HUMP_HAZELCAST_PASSWORD = "humpps";
   public static final String HUMP_HAZELCAST_TASK_QUEUE = "hump.task.queue";
   public static final String HUMP_HAZELCAST_FEEDBACK_QUEUE = "hump.feedback.queue";
-  public static final int HUMP_TASKS = 20;
+  public static final int HUMP_TASKS = 5;
 
+  public static final String CONF_HUMP_COMPRESSION_CODEC = "hump.compression.codec";
   public static final String CONF_HUMP_HAZELCAST_ENDPOINT = "hump.hazelcast.endpoint";
   public static final String CONF_HUMP_HAZELCAST_GROUP = "hump.hazelcast.group";
   public static final String CONF_HUMP_HAZELCAST_PASSWORD = "hump.hazelcast.password";
   public static final String CONF_HUMP_TASKS = "hump.tasks";
   public static final String CONF_HUMP_TASK_CLASS = "hump.task.class";
-  public static final String CONF_HUMP_COMPRESSION_CODEC = "hump.compression.codec";
+  public static final String CONF_HUMP_TASK_SHUFFLE = "hump.task.shuffle";
 
   BlockingQueue<String> taskQueue;
   BlockingQueue<String> feedbackQueue;
 
 	String argv[];
-	File jsonSource;
 	HumpFeeder feeder;
 	Thread feederThread;
 
@@ -85,10 +85,19 @@ public class Hump extends Configured implements Tool {
 
 
 	private void feederInit() throws IOException {
-		Configuration conf = getConf();
+    Configuration conf = getConf();
+    File sources[];
+
+    if (argv != null && argv.length >= 1) {
+      sources = new File[argv.length];
+      for (int i = 0; i < sources.length; ++i)
+        sources[i] = new File(argv[i]);
+    } else {
+      sources = new File[] { new File("hump-tasks.json")};
+    }
 
 		feeder = new HumpFeeder();
-		feeder.setup(jsonSource, taskQueue, feedbackQueue,
+		feeder.setup(conf, sources, taskQueue, feedbackQueue,
 			conf.getInt(CONF_HUMP_TASKS, HUMP_TASKS));
 
 		feederThread = new Thread(feeder);
@@ -139,7 +148,7 @@ public class Hump extends Configured implements Tool {
 		// Set default configuration.
 		conf.set(CONF_HUMP_TASK_CLASS, "us.yuxin.hump.HumpDumpTask");
 		conf.setInt(CONF_HUMP_TASKS, HUMP_TASKS);
-
+    conf.setBoolean(CONF_HUMP_TASK_SHUFFLE, true);
 
     int res = ToolRunner.run(new Configuration(), new Hump(), args);
     System.exit(res);

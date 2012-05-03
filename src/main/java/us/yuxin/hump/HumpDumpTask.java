@@ -38,9 +38,9 @@ public class HumpDumpTask implements HumpTask {
   @Override
   public void run(Mapper.Context context, Text serial, Text taskInfo) throws IOException, InterruptedException {
     System.out.println("HumpDumpTask.run -- " + serial.toString() + ":" + taskInfo.toString());
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode rootNode = mapper.readValue(taskInfo.toString(), JsonNode.class);
-    System.out.println("ID:" + rootNode.get("id").getIntValue());
+    // ObjectMapper mapper = new ObjectMapper();
+    // JsonNode rootNode = mapper.readValue(taskInfo.toString(), JsonNode.class);
+    // System.out.println("ID:" + rootNode.get("id").getIntValue());
     Thread.sleep(1500);
   }
 
