@@ -1,5 +1,6 @@
 package us.yuxin.hump;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.BlockingQueue;
@@ -24,14 +25,14 @@ import org.apache.hadoop.util.ToolRunner;
 // TODO Hazelcast default configuration file.
 // TODO Counter Implement.
 // TODO Hazelcast Logging configuration.
+// TODO Shared library path can be set.
 
 public class Hump extends Configured implements Tool {
   public static final String HUMP_HAZELCAST_GROUP = "hump";
   public static final String HUMP_HAZELCAST_PASSWORD = "humpps";
   public static final String HUMP_HAZELCAST_TASK_QUEUE = "hump.task.queue";
   public static final String HUMP_HAZELCAST_FEEDBACK_QUEUE = "hump.feedback.queue";
-
-  public static final int HUMP_TASK_PARALLEL = 20;
+  public static final int HUMP_TASKS = 20;
 
   public static final String CONF_HUMP_HAZELCAST_ENDPOINT = "hump.hazelcast.endpoint";
   public static final String CONF_HUMP_HAZELCAST_GROUP = "hump.hazelcast.group";
@@ -43,10 +44,19 @@ public class Hump extends Configured implements Tool {
   BlockingQueue<String> taskQueue;
   BlockingQueue<String> feedbackQueue;
 
-  public int run(String[] args) throws Exception {
+	String argv[];
+	File jsonSource;
+	HumpFeeder feeder;
+	Thread feederThread;
+
+  public int run(String[] argv) throws Exception {
+		this.argv = argv;
+
     gridInit();
+		feederInit();
     runJob();
     gridShutdown();
+
     return 0;
   }
 
@@ -74,6 +84,20 @@ public class Hump extends Configured implements Tool {
   }
 
 
+	private void feederInit() throws IOException {
+		Configuration conf = getConf();
+
+		feeder = new HumpFeeder();
+		feeder.setup(jsonSource, taskQueue, feedbackQueue,
+			conf.getInt(CONF_HUMP_TASKS, HUMP_TASKS));
+
+		feederThread = new Thread(feeder);
+		feederThread.setDaemon(true);
+		feederThread.setName("Hump Feeder");
+		feederThread.start();
+	}
+
+
   private void gridShutdown() {
     Hazelcast.shutdownAll();
   }
@@ -82,9 +106,7 @@ public class Hump extends Configured implements Tool {
   private void runJob() throws IOException, ClassNotFoundException, InterruptedException {
     Configuration conf = getConf();
 
-    // TODO list dir and add jars
     FileSystem fs = FileSystem.get(conf);
-
     FileStatus[] fileStatuses = fs.listStatus(new Path("/is/app/hump/lib"));
 
     for (FileStatus fileStatus: fileStatuses) {
@@ -93,17 +115,6 @@ public class Hump extends Configured implements Tool {
       }
     }
     fs.close();
-
-    for (int i = 0; i < HUMP_TASK_PARALLEL * 5; ++i ) {
-      taskQueue.put("{\"id\": "+ Integer.toString(i) + "}");
-    }
-
-    for (int i = 0; i < HUMP_TASK_PARALLEL; ++i) {
-      taskQueue.put("STOP");
-    }
-
-    conf.setInt(CONF_HUMP_TASKS, HUMP_TASK_PARALLEL);
-    conf.set(CONF_HUMP_TASK_CLASS, "us.yuxin.hump.HumpDumpTask");
 
     Job job = new Job(conf);
 
@@ -123,6 +134,13 @@ public class Hump extends Configured implements Tool {
   }
 
   public static void main(String[] args) throws Exception {
+		Configuration conf = new Configuration();
+
+		// Set default configuration.
+		conf.set(CONF_HUMP_TASK_CLASS, "us.yuxin.hump.HumpDumpTask");
+		conf.setInt(CONF_HUMP_TASKS, HUMP_TASKS);
+
+
     int res = ToolRunner.run(new Configuration(), new Hump(), args);
     System.exit(res);
   }

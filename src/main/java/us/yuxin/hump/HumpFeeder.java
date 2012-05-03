@@ -16,17 +16,26 @@ public class HumpFeeder implements Runnable {
 	private int parallel;
 
 	private ObjectMapper mapper;
-	private JsonNode root;
+	private File[] sources;
 
 	private BlockingQueue<String> taskQueue;
 	private BlockingQueue<String> feedbackQueue;
 
+	public void setup(File[] jsonSources,
+										BlockingQueue<String> taskQueue,
+										BlockingQueue<String> feedbackQueue,
+										int parallel) {
+		this.sources = jsonSources;
+		this.taskQueue = taskQueue;
+		this.feedbackQueue = feedbackQueue;
+		this.parallel = parallel;
+	}
+
 	public void setup(File jsonSource,
 										BlockingQueue<String> taskQueue, BlockingQueue<String> feedbackQueue,
 										int parallel) throws IOException {
-		ObjectMapper mapper = new ObjectMapper();
-		root = mapper.readValue(jsonSource, JsonNode.class);
-
+		this.sources = new File[1];
+		this.sources[0] = jsonSource;
 		this.taskQueue = taskQueue;
 		this.feedbackQueue = feedbackQueue;
 		this.parallel = parallel;
@@ -34,23 +43,29 @@ public class HumpFeeder implements Runnable {
 
 	public void run() {
 		int serial = 0;
-		List<JsonNode> tasks = Lists.newArrayList(root);
-		Collections.shuffle(tasks);
+		mapper = new ObjectMapper();
 
-		for (JsonNode node: tasks) {
+		for (File source : sources) {
 			try {
-				if(node.isObject()) {
-					ObjectNode on = (ObjectNode)node;
-					on.put("serial", serial);
-					taskQueue.offer(mapper.writeValueAsString(on));
-				} else {
-					taskQueue.offer(mapper.writeValueAsString(node));
+				JsonNode root = mapper.readValue(source, JsonNode.class);
+				List<JsonNode> tasks = Lists.newArrayList(root);
+				Collections.shuffle(tasks);
+
+				for (JsonNode node : tasks) {
+
+					if (node.isObject()) {
+						ObjectNode on = (ObjectNode) node;
+						on.put("serial", serial);
+						taskQueue.offer(mapper.writeValueAsString(on));
+					} else {
+						taskQueue.offer(mapper.writeValueAsString(node));
+					}
+					++serial;
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 				// TODO Exception handler.
 			}
-			++serial;
 		}
 
 		for (int i = 0; i < parallel; ++i) {
