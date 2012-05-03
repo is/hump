@@ -54,6 +54,7 @@ public class HumpFeeder implements Runnable {
     }
   }
 
+  /*
   public void setup(Configuration conf, File jsonSource,
     BlockingQueue<String> taskQueue, BlockingQueue<String> feedbackQueue, int parallel) throws IOException {
     File[] sources = new File[1];
@@ -61,6 +62,7 @@ public class HumpFeeder implements Runnable {
 
     setup(conf, sources, taskQueue, feedbackQueue, parallel);
   }
+  */
 
   public void run() {
     for (String task: tasks) {

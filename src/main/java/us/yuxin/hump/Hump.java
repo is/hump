@@ -150,7 +150,7 @@ public class Hump extends Configured implements Tool {
 		conf.setInt(CONF_HUMP_TASKS, HUMP_TASKS);
     conf.setBoolean(CONF_HUMP_TASK_SHUFFLE, true);
 
-    int res = ToolRunner.run(new Configuration(), new Hump(), args);
+    int res = ToolRunner.run(conf, new Hump(), args);
     System.exit(res);
   }
 }
