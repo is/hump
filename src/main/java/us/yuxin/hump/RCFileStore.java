@@ -51,6 +51,11 @@ public class RCFileStore implements Store {
     RCFileOutputFormat.setColumnNumber(conf, columns);
 
     SequenceFile.Metadata metadata = createRCFileMetadata(jdbcMetadata, prop);
+
+    if (codec != null) {
+      file = new Path(file.toString() + "." + codec.getDefaultExtension());
+    }
+
     RCFile.Writer writer = new RCFile.Writer(fs, conf, file, null, metadata, codec);
     ResultSet rs = source.getResultSet();
     BytesRefArrayWritable bytes = new BytesRefArrayWritable(columns);
