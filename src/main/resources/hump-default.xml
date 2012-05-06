@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<configuration>
+  <property>
+    <name>mapred.map.tasks.speculative.execution</name>
+    <value>false</value>
+  </property>
+
+  <property>
+    <name>mapred.reduce.tasks.speculative.execution</name>
+    <value>false</value>
+  </property>
+
+  <property>
+    <name>hump.tasks</name>
+    <value>20</value>
+  </property>
+
+  <property>
+    <name>hump.task.shuffle</name>
+    <value>true</value>
+  </property>
+
+  <property>
+    <name>hump.task.class</name>
+    <value>us.yuxin.hump.HumpDumpTask</value>
+  </property>
+
+  <property>
+    <name>hump.hazelcast.group</name>
+    <value>hump</value>
+  </property>
+
+  <property>
+    <name>hump.hazelcast.password</name>
+    <value>humpps</value>
+  </property>
+
+</configuration>

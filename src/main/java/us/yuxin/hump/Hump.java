@@ -3,6 +3,7 @@ package us.yuxin.hump;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.URL;
 import java.util.concurrent.BlockingQueue;
 
 import com.hazelcast.config.Config;
@@ -142,15 +143,33 @@ public class Hump extends Configured implements Tool {
     job.waitForCompletion(true);
   }
 
-  public static void main(String[] args) throws Exception {
-    Configuration conf = new Configuration();
 
-    // Set default configuration.
-    conf.set(CONF_HUMP_TASK_CLASS, "us.yuxin.hump.HumpDumpTask");
-    conf.setInt(CONF_HUMP_TASKS, HUMP_TASKS);
-    conf.setBoolean(CONF_HUMP_TASK_SHUFFLE, true);
-    conf.setBoolean("mapred.map.tasks.speculative.execution", false);
-    conf.setBoolean("mapred.reduce.tasks.speculative.execution", false);
+  protected static Configuration prepareConfiguration() {
+    Configuration conf = new Configuration();
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    if (classLoader == null) {
+      classLoader = Hump.class.getClassLoader();
+    }
+
+    URL defaultURL = classLoader.getResource("hump-default.xml");
+    if (defaultURL != null)
+      conf.addResource(defaultURL);
+
+    URL siteURL = classLoader.getResource("hump-site.xml");
+    if (siteURL != null)
+      conf.addResource(siteURL);
+
+    return conf;
+  }
+
+  public static void main(String[] args) throws Exception {
+    Configuration conf = prepareConfiguration();
+//    Set default configuration.
+//    conf.set(CONF_HUMP_TASK_CLASS, "us.yuxin.hump.HumpDumpTask");
+//    conf.setInt(CONF_HUMP_TASKS, HUMP_TASKS);
+//    conf.setBoolean(CONF_HUMP_TASK_SHUFFLE, true);
+//    conf.setBoolean("mapred.map.tasks.speculative.execution", false);
+//    conf.setBoolean("mapred.reduce.tasks.speculative.execution", false);
 
     int res = ToolRunner.run(conf, new Hump(), args);
     System.exit(res);
