@@ -53,7 +53,7 @@ public class RCFileStore implements Store {
     SequenceFile.Metadata metadata = createRCFileMetadata(jdbcMetadata, prop);
 
     if (codec != null) {
-      file = new Path(file.toString() + "." + codec.getDefaultExtension());
+      file = new Path(file.toString()  + codec.getDefaultExtension());
     }
 
     RCFile.Writer writer = new RCFile.Writer(fs, conf, file, null, metadata, codec);
