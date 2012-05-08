@@ -123,7 +123,7 @@ public class HumpDumpTask implements HumpTask {
     feedback.put("cells", singleCounter.cells);
     feedback.put("nullCells", singleCounter.nullCells);
     feedback.put("cellBytes", singleCounter.bytes);
-    feedback.put("beginTime", new SimpleDateFormat("yyyyMMdd.kkmmss").format(new Date(beginTime)));
+    feedback.put("beginTime", new SimpleDateFormat("yyyyMMdd.HHmmss").format(new Date(beginTime)));
     feedback.put("during", singleCounter.during);
     feedback.put("taskid", context.getTaskAttemptID().toString());
 
