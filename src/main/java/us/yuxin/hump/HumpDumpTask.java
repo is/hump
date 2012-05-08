@@ -2,6 +2,8 @@ package us.yuxin.hump;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.BlockingQueue;
 
 import com.hazelcast.client.HazelcastClient;
@@ -22,6 +24,8 @@ public class HumpDumpTask implements HumpTask {
   Configuration conf;
 
   BlockingQueue<String> feedbackQueue;
+  HazelcastClient client;
+
   StoreCounter globalCounter;
   StoreCounter singleCounter;
   int taskCounter;
@@ -29,8 +33,8 @@ public class HumpDumpTask implements HumpTask {
   @Override
   public void setup(Mapper.Context context) throws IOException, InterruptedException {
     conf = context.getConfiguration();
-    HazelcastClient client = HumpGridClient.getClient(conf);
-    feedbackQueue = client.getQueue(conf.get(Hump.HUMP_HAZELCAST_FEEDBACK_QUEUE));
+    client = HumpGridClient.getClient(conf);
+    feedbackQueue = client.getQueue(Hump.HUMP_HAZELCAST_FEEDBACK_QUEUE);
 
     fs = FileSystem.get(context.getConfiguration());
     CompressionCodec codec = null;
@@ -58,6 +62,10 @@ public class HumpDumpTask implements HumpTask {
     System.out.println("HumpDumpTask.run -- " + serial.toString() + ":" + taskInfo.toString());
     singleCounter.reset();
     ++taskCounter;
+    long beginTime;
+    long endTime;
+
+    beginTime = System.currentTimeMillis();
 
     ObjectMapper mapper = new ObjectMapper();
     JsonNode root = mapper.readValue(taskInfo.toString(), JsonNode.class);
@@ -82,6 +90,8 @@ public class HumpDumpTask implements HumpTask {
       source.open();
       store.store(new Path(target), source, null, singleCounter);
       source.close();
+      endTime = System.currentTimeMillis();
+      singleCounter.during = endTime - beginTime;
     } catch (SQLException e) {
       e.printStackTrace();
       // TODO Exception handler
@@ -113,6 +123,8 @@ public class HumpDumpTask implements HumpTask {
     feedback.put("cells", singleCounter.cells);
     feedback.put("nullCells", singleCounter.nullCells);
     feedback.put("cellBytes", singleCounter.bytes);
+    feedback.put("beginTime", new SimpleDateFormat("yyyyMMdd.kkmmss").format(new Date(beginTime)));
+    feedback.put("during", singleCounter.during);
     feedback.put("taskid", context.getTaskAttemptID().toString());
 
     feedbackQueue.offer(mapper.writeValueAsString(feedback));
