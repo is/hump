@@ -6,20 +6,22 @@ import org.apache.hadoop.conf.Configuration;
 
 public class HumpCollector implements Runnable {
   Configuration conf;
+  int taskCounter;
   BlockingQueue<String> feedbackQueue;
 
   public void setup(Configuration conf, BlockingQueue<String> feedbackQueue) {
     this.conf = conf;
     this.feedbackQueue = feedbackQueue;
+    this.taskCounter = 0;
   }
 
   public void run() {
-    System.out.println("COLLECTION-BEGIN");
+    System.out.println("COLLECTOR-BEGIN");
     while (true) {
       String res;
-
       try {
         res = feedbackQueue.take();
+        ++taskCounter;
       } catch (InterruptedException e) {
         e.printStackTrace();
         break;
@@ -27,8 +29,8 @@ public class HumpCollector implements Runnable {
       if (res.equals("STOP"))
         break;
 
-      System.out.println(res);
+      System.out.format("%05d -- %s\n", taskCounter, res);
     }
-    System.out.println("COLLECTION-END");
+    System.out.println("COLLECTOR-END " + taskCounter + " tasks");
   }
 }
