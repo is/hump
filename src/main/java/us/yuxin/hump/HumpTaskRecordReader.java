@@ -13,7 +13,6 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
 public class HumpTaskRecordReader extends RecordReader<Text, Text> {
-  HazelcastClient client;
   BlockingQueue<String> jobQueue;
   TaskAttemptContext context;
   int serial;
@@ -26,11 +25,7 @@ public class HumpTaskRecordReader extends RecordReader<Text, Text> {
     serial = 0;
     Configuration conf = context.getConfiguration();
 
-    ClientConfig cfg = new ClientConfig();
-    cfg.setGroupConfig(new GroupConfig(conf.get(Hump.CONF_HUMP_HAZELCAST_GROUP), conf.get(Hump.CONF_HUMP_HAZELCAST_PASSWORD)));
-    cfg.addAddress(conf.get(Hump.CONF_HUMP_HAZELCAST_ENDPOINT));
-
-    client = HazelcastClient.newHazelcastClient(cfg);
+    HazelcastClient client = HumpGridClient.getClient(conf);
     jobQueue = client.getQueue(Hump.HUMP_HAZELCAST_TASK_QUEUE);
 
     this.context = context;
@@ -67,6 +62,6 @@ public class HumpTaskRecordReader extends RecordReader<Text, Text> {
   @Override
   public void close() throws IOException {
     System.out.println("HumpTaskRecordReader.close");
-    client.shutdown();
+    HumpGridClient.shutdown();
   }
 }

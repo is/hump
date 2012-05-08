@@ -33,6 +33,7 @@ public class Hump extends Configured implements Tool {
   public static final String HUMP_HAZELCAST_PASSWORD = "humpps";
   public static final String HUMP_HAZELCAST_TASK_QUEUE = "hump.task.queue";
   public static final String HUMP_HAZELCAST_FEEDBACK_QUEUE = "hump.feedback.queue";
+
   public static final int HUMP_TASKS = 5;
 
   public static final String CONF_HUMP_COMPRESSION_CODEC = "hump.compression.codec";

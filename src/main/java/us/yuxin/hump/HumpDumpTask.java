@@ -2,7 +2,9 @@ package us.yuxin.hump;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.concurrent.BlockingQueue;
 
+import com.hazelcast.client.HazelcastClient;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -18,9 +20,14 @@ public class HumpDumpTask implements HumpTask {
   RCFileStore store;
   Configuration conf;
 
+  BlockingQueue<String> feedbackQueue;
+
   @Override
   public void setup(Mapper.Context context) throws IOException, InterruptedException {
     conf = context.getConfiguration();
+    HazelcastClient client = HumpGridClient.getClient(conf);
+    feedbackQueue = client.getQueue(conf.get(Hump.HUMP_HAZELCAST_FEEDBACK_QUEUE));
+
     fs = FileSystem.get(context.getConfiguration());
     CompressionCodec codec = null;
 
