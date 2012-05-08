@@ -51,12 +51,19 @@ public class Hump extends Configured implements Tool {
   HumpFeeder feeder;
   Thread feederThread;
 
+  HumpCollector collector;
+  Thread collectorThread;
+
   public int run(String[] argv) throws Exception {
     this.argv = argv;
 
     gridInit();
     feederInit();
+    collectorInit();
+
     runJob();
+
+    collectorShutdown();
     gridShutdown();
 
     return 0;
@@ -103,14 +110,34 @@ public class Hump extends Configured implements Tool {
       conf.getInt(CONF_HUMP_TASKS, HUMP_TASKS));
 
     feederThread = new Thread(feeder);
-    feederThread.setDaemon(true);
+    feederThread.setDaemon(false);
     feederThread.setName("Hump Feeder");
     feederThread.start();
   }
 
 
+  private void collectorInit() {
+    collector = new HumpCollector();
+    collector.setup(getConf(), feedbackQueue);
+
+    collectorThread = new Thread(collector);
+    collectorThread.setDaemon(false);
+    collectorThread.setName("Hump Collector");
+    collectorThread.start();
+  }
+
+
   private void gridShutdown() {
     Hazelcast.shutdownAll();
+  }
+
+  private void collectorShutdown() {
+    feedbackQueue.offer("STOP");
+    try {
+      collectorThread.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
   }
 
 

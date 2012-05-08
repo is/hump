@@ -15,7 +15,7 @@ public class HumpFeeder implements Runnable {
   private int parallel;
 
   private BlockingQueue<String> taskQueue;
-  private BlockingQueue<String> feedbackQueue;
+  // private BlockingQueue<String> feedbackQueue;
   private Configuration conf;
   List<String> tasks;
 
@@ -25,7 +25,7 @@ public class HumpFeeder implements Runnable {
     this.conf = conf;
 
     this.taskQueue = taskQueue;
-    this.feedbackQueue = feedbackQueue;
+    // this.feedbackQueue = feedbackQueue;
     this.parallel = parallel;
 
     setupSources(sources);

@@ -25,15 +25,21 @@ public class RCFileStore implements Store {
   FileSystem fs;
   Configuration conf;
   CompressionCodec codec;
+  StoreCounter counter;
 
   public RCFileStore(FileSystem fs, Configuration conf, CompressionCodec codec) {
     this.fs = fs;
     this.conf = conf;
     this.codec = codec;
+    this.counter = new StoreCounter();
   }
 
 
   public void store(Path file, JdbcSource source, Properties prop) throws IOException {
+    store(file, source, prop, null);
+  }
+
+  public void store(Path file, JdbcSource source, Properties prop, StoreCounter counter) throws IOException {
     if (source == null || !source.isReady()) {
       throw new IOException("JDBC Source is not ready");
     }
@@ -56,6 +62,11 @@ public class RCFileStore implements Store {
       file = new Path(file.toString()  + codec.getDefaultExtension());
     }
 
+    // Set dump object if counter is null
+    if (counter == null) {
+      counter = new StoreCounter();
+    }
+
     RCFile.Writer writer = new RCFile.Writer(fs, conf, file, null, metadata, codec);
     ResultSet rs = source.getResultSet();
     BytesRefArrayWritable bytes = new BytesRefArrayWritable(columns);
@@ -64,14 +75,16 @@ public class RCFileStore implements Store {
     // TODO Print whole row data value when an exception raised.
     try {
       while (rs.next()) {
+        ++counter.rows;
         for (int c = 0; c < columns; ++c) {
           Object value;
           try {
             value = rs.getObject(c + 1);
+            ++counter.cells;
           } catch (SQLException e) {
             throw new IOException("Failed to fetch data from JDBC source, column is "  + jdbcMetadata.names[c] + "/" + c, e);
           }
-          bytes.set(c, valueToBytesRef(value, types[c]));
+          bytes.set(c, valueToBytesRef(value, types[c], counter));
         }
         writer.append(bytes);
         bytes.clear();
@@ -83,10 +96,15 @@ public class RCFileStore implements Store {
   }
 
 
-  private BytesRefWritable valueToBytesRef(Object value, int c) {
-    if (value == null)
+  private BytesRefWritable valueToBytesRef(Object value, int c, StoreCounter counter) {
+    if (value == null) {
+      ++counter.nullCells;
       return stringToBytesRefWritable("NULL");
-    return stringToBytesRefWritable(value.toString());
+    }
+
+    BytesRefWritable brw = stringToBytesRefWritable(value.toString());
+    counter.bytes += brw.getLength();
+    return brw;
   }
 
 
