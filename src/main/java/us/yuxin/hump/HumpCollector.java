@@ -21,7 +21,7 @@ public class HumpCollector implements Runnable {
       String res;
       try {
         res = feedbackQueue.take();
-        ++taskCounter;
+
       } catch (InterruptedException e) {
         e.printStackTrace();
         break;
@@ -30,6 +30,7 @@ public class HumpCollector implements Runnable {
         break;
 
       System.out.format("%05d -- %s\n", taskCounter, res);
+      ++taskCounter;
     }
     System.out.println("COLLECTOR-END " + taskCounter + " tasks");
   }
