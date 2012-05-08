@@ -14,8 +14,10 @@ public class HumpCollector implements Runnable {
   }
 
   public void run() {
-    String res;
+    System.out.println("COLLECTION-BEGIN");
     while (true) {
+      String res;
+
       try {
         res = feedbackQueue.take();
       } catch (InterruptedException e) {
@@ -27,5 +29,6 @@ public class HumpCollector implements Runnable {
 
       System.out.println(res);
     }
+    System.out.println("COLLECTION-END");
   }
 }

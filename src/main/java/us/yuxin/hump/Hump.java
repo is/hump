@@ -110,7 +110,7 @@ public class Hump extends Configured implements Tool {
       conf.getInt(CONF_HUMP_TASKS, HUMP_TASKS));
 
     feederThread = new Thread(feeder);
-    feederThread.setDaemon(false);
+    feederThread.setDaemon(true);
     feederThread.setName("Hump Feeder");
     feederThread.start();
   }
@@ -121,7 +121,7 @@ public class Hump extends Configured implements Tool {
     collector.setup(getConf(), feedbackQueue);
 
     collectorThread = new Thread(collector);
-    collectorThread.setDaemon(false);
+    collectorThread.setDaemon(true);
     collectorThread.setName("Hump Collector");
     collectorThread.start();
   }
