@@ -85,10 +85,12 @@ public class HumpDumpExecutor implements HumpExecutor {
       source.setQuery(stmt);
     }
 
-    JdbcSourceMetadata metadata;
+    JdbcSourceMetadata metadata = null;
     String target = root.get("target").getTextValue();
     try {
       source.open();
+      metadata = new JdbcSourceMetadata();
+      metadata.setJdbcSource(source);
 
       store.store(new Path(target), source, null, singleCounter);
       source.close();
@@ -128,6 +130,10 @@ public class HumpDumpExecutor implements HumpExecutor {
     feedback.put("beginTime", new SimpleDateFormat("yyyyMMdd.HHmmss").format(new Date(beginTime)));
     feedback.put("during", singleCounter.during);
     feedback.put("taskid", context.getTaskAttemptID().toString());
+    if (metadata != null) {
+      feedback.put("cloumns", metadata.columnNames);
+      feedback.put("columnTypes", metadata.columnHiveTypes);
+    }
 
     feedbackQueue.offer(mapper.writeValueAsString(feedback));
     // ObjectMapper mapper = new ObjectMapper();
