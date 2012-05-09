@@ -18,7 +18,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ObjectNode;
 
 
-public class HumpDumpTask implements HumpTask {
+public class HumpDumpExecutor implements HumpExecutor {
   FileSystem fs;
   RCFileStore store;
   Configuration conf;
@@ -59,7 +59,7 @@ public class HumpDumpTask implements HumpTask {
 
   @Override
   public void run(Mapper.Context context, Text serial, Text taskInfo) throws IOException, InterruptedException {
-    System.out.println("HumpDumpTask.run -- " + serial.toString() + ":" + taskInfo.toString());
+    System.out.println("HumpDumpExecutor.run -- " + serial.toString() + ":" + taskInfo.toString());
     singleCounter.reset();
     ++taskCounter;
     long beginTime;
@@ -85,9 +85,11 @@ public class HumpDumpTask implements HumpTask {
       source.setQuery(stmt);
     }
 
+    JdbcSourceMetadata metadata;
     String target = root.get("target").getTextValue();
     try {
       source.open();
+
       store.store(new Path(target), source, null, singleCounter);
       source.close();
       endTime = System.currentTimeMillis();

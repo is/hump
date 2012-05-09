@@ -24,7 +24,7 @@
 
   <property>
     <name>hump.task.class</name>
-    <value>us.yuxin.hump.HumpDumpTask</value>
+    <value>us.yuxin.hump.HumpDumpExecutor</value>
   </property>
 
   <property>

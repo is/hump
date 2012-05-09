@@ -192,13 +192,6 @@ public class Hump extends Configured implements Tool {
 
   public static void main(String[] args) throws Exception {
     Configuration conf = prepareConfiguration();
-//    Set default configuration.
-//    conf.set(CONF_HUMP_TASK_CLASS, "us.yuxin.hump.HumpDumpTask");
-//    conf.setInt(CONF_HUMP_TASKS, HUMP_TASKS);
-//    conf.setBoolean(CONF_HUMP_TASK_SHUFFLE, true);
-//    conf.setBoolean("mapred.map.tasks.speculative.execution", false);
-//    conf.setBoolean("mapred.reduce.tasks.speculative.execution", false);
-
     int res = ToolRunner.run(conf, new Hump(), args);
     System.exit(res);
   }
