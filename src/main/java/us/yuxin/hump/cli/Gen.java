@@ -27,6 +27,7 @@ public class Gen {
   String columnTypes[];
 
   String tableName;
+  String partition;
 
 
   // ----
@@ -36,20 +37,23 @@ public class Gen {
   final static String O_EXTERNAL = "external";
   final static String O_FLAGS = "flags";
   final static String O_HIVE_TYPES = "hivetypes";
+  final static String O_PASSWORD = "password";
+  final static String O_PARTITION = "partition";
   final static String O_QUERY = "query";
   final static String O_SOURCE = "source";
   final static String O_SQL_TYPES = "sqltypes";
   final static String O_TABLE = "table";
   final static String O_TARGET = "target";
   final static String O_USERNAME = "username";
-  final static String O_PASSWORD = "password";
+
+
 
 
   private void prepareCmdlineOptions() {
     options = new Options();
     addOption("d", O_DRIVER, true, "JDBC Driver classname", "class");
     addOption("s", O_SOURCE, true, "Data source URL", "url");
-    addOption("Q", O_QUERY, true, "SQL query statement", "statement");
+    addOption("q", O_QUERY, true, "SQL query statement", "statement");
     addOption(null, O_TABLE, true, "Data source table name", "name");
 
     addOption("C", O_COLUMNS, true, "Column names", "names");
@@ -59,11 +63,12 @@ public class Gen {
     addOption("t", O_TARGET, true, "Target table name", "name");
     addOption(null, O_COMMENT, true, "Table comments", "comment");
 
-    addOption("U", O_USERNAME, true, "Database username", "user");
-    addOption("P", O_PASSWORD, true, "Database password", "pass");
+    addOption("u", O_USERNAME, true, "Database username", "user");
+    addOption("p", O_PASSWORD, true, "Database password", "pass");
 
     addOption("f", O_FLAGS, true, "Flags for hive DML statement\ne:EXTERNAL, i:IF NOT EXIST, d:DROP TABLE", "flags");
     addOption("e", O_EXTERNAL, false, "External hive table");
+    addOption("P", O_PARTITION, true, "Hive table partition, v:type,v:type ...");
   }
 
 
@@ -233,6 +238,29 @@ public class Gen {
 
     if (cmdline.hasOption(O_COMMENT))
       out.println("COMMENT '" + cmdline.getOptionValue(O_COMMENT) + "'");
+
+    if (cmdline.hasOption(O_PARTITION)) {
+      String pstr = cmdline.getOptionValue(O_PARTITION);
+      String speces[] = Iterables.toArray(Splitter.on(",").split(pstr), String.class);
+
+      StringBuilder sb = new StringBuilder();
+      sb.append("PARTITIONED BY (");
+      for (int i = 0; i < speces.length; ++i) {
+        String spec = speces[i];
+        int p = spec.indexOf(":");
+        if (p == -1) {
+          sb.append(spec).append(" string");
+        } else {
+          sb.append(spec.replace(':', ' '));
+        }
+
+        if (i != speces.length - 1) {
+          sb.append(", ");
+        }
+      }
+      sb.append(")");
+      out.println(sb.toString());
+    }
 
     out.println("STORED AS RCFile;");
   }
