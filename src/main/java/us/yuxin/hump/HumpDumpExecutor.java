@@ -72,9 +72,43 @@ public class HumpDumpExecutor implements HumpExecutor {
 
     JdbcSource source = new JdbcSource();
 
+    String dbType = "mysql";
+    if (root.get("type") != null) {
+      dbType = root.get("type").getTextValue();
+    }
 
-    source.setDriver(root.get("driver").getTextValue());
-    source.setUrl(root.get("url").getTextValue());
+    if (root.get("driver") != null) {
+      source.setDriver(root.get("driver").getTextValue());
+    } else {
+      if (dbType.equals("mysql")) {
+        source.setDriver("com.mysql.jdbc.Driver");
+      }
+    }
+
+    String url;
+
+    if (root.get("url") != null) {
+      url = root.get("url").getTextValue();
+    } else {
+      String host = root.get("host").getTextValue();
+      String port = "";
+      if (root.get("port") != null) {
+        port = ":" + root.get("port").getTextValue();
+      }
+
+      String db = root.get("db").getTextValue();
+      url = "jdbc:" + dbType + "//" + host + port + "/" + db;
+    }
+    if (conf.get(Hump.CONF_HUMP_JDBC_PARAMETERS) != null) {
+      if (url.indexOf("?") == -1) {
+        url = url + "?" + conf.get(Hump.CONF_HUMP_JDBC_PARAMETERS);
+      } else {
+        url = url + "&" + conf.get(Hump.CONF_HUMP_JDBC_PARAMETERS);
+      }
+    }
+
+    source.setUrl(url);
+
     source.setUsername(root.get("username").getTextValue());
     if (root.get("password") != null)
       source.setPassword(root.get("password").getTextValue());

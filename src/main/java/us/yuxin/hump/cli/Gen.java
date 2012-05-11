@@ -47,8 +47,6 @@ public class Gen {
   final static String O_USERNAME = "username";
 
 
-
-
   private void prepareCmdlineOptions() {
     options = new Options();
     addOption("d", O_DRIVER, true, "JDBC Driver classname", "class");

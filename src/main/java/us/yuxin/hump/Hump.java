@@ -43,6 +43,7 @@ public class Hump extends Configured implements Tool {
   public static final String CONF_HUMP_TASKS = "hump.tasks";
   public static final String CONF_HUMP_TASK_CLASS = "hump.task.class";
   public static final String CONF_HUMP_TASK_SHUFFLE = "hump.task.shuffle";
+  public static final String CONF_HUMP_JDBC_PARAMETERS = "hump.jdbc.parameters";
 
   BlockingQueue<String> taskQueue;
   BlockingQueue<String> feedbackQueue;
@@ -53,6 +54,7 @@ public class Hump extends Configured implements Tool {
 
   HumpCollector collector;
   Thread collectorThread;
+
 
   public int run(String[] argv) throws Exception {
     this.argv = argv;
