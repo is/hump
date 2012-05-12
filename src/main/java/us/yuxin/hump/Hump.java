@@ -196,6 +196,7 @@ public class Hump extends Configured implements Tool {
     return conf;
   }
 
+
   public static void main(String[] args) throws Exception {
     Configuration conf = prepareConfiguration();
     int res = ToolRunner.run(conf, new Hump(), args);

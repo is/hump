@@ -54,7 +54,7 @@ public class HumpFeeder implements Runnable {
 
 
   public void run() {
-    String feedCmd = "{\"msg\":\"feedtasknotify\", \"tasks\":" + tasks.size() + "}";
+    String feedCmd = "{\"type\":\"feed.notify.tasks\", \"tasks\":" + tasks.size() + "}";
     feedbackQueue.offer(feedCmd);
 
     for (String task : tasks) {
