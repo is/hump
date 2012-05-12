@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.BlockingQueue;
 
+import com.google.common.base.Throwables;
 import com.hazelcast.client.HazelcastClient;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -122,6 +123,7 @@ public class HumpDumpExecutor implements HumpExecutor {
 
     JdbcSourceMetadata metadata = null;
     String target = root.get("target").getTextValue();
+    Exception ex = null;
     try {
       source.open();
       metadata = new JdbcSourceMetadata();
@@ -133,14 +135,18 @@ public class HumpDumpExecutor implements HumpExecutor {
       singleCounter.during = endTime - beginTime;
     } catch (SQLException e) {
       e.printStackTrace();
-      // TODO Exception handler
+      ex = e;
     } catch (ClassNotFoundException e) {
       e.printStackTrace();
-      // TODO Exception handler
+      ex = e;
     }
 
     globalCounter.plus(singleCounter);
-    System.out.println("OK...");
+    if (ex != null) {
+      System.out.println("ERROR");
+    } else {
+      System.out.println("OK...");
+    }
 
     // ---- Send feedback.
     ObjectNode feedback = mapper.createObjectNode();
@@ -155,19 +161,29 @@ public class HumpDumpExecutor implements HumpExecutor {
     }
 
     feedback.put("id", id);
-    feedback.put("target", root.get("target").getTextValue());
-    feedback.put("status", "OK");
-    feedback.put("code", 0);
-    feedback.put("rows", singleCounter.rows);
-    feedback.put("cells", singleCounter.cells);
-    feedback.put("nullCells", singleCounter.nullCells);
-    feedback.put("cellBytes", singleCounter.bytes);
     feedback.put("beginTime", new SimpleDateFormat("yyyyMMdd.HHmmss").format(new Date(beginTime)));
-    feedback.put("during", singleCounter.during);
+    feedback.put("target", root.get("target").getTextValue());
     feedback.put("taskid", context.getTaskAttemptID().toString());
-    if (metadata != null) {
-      feedback.put("cloumns", metadata.columnNames);
-      feedback.put("columnTypes", metadata.columnHiveTypes);
+
+    if (ex != null) {
+      feedback.put("code", 1);
+      feedback.put("status", "ERROR");
+      feedback.put("message", ex.getMessage());
+      feedback.put("exception", Throwables.getStackTraceAsString(ex));
+    } else {
+      feedback.put("status", "OK");
+      feedback.put("code", 0);
+      feedback.put("rows", singleCounter.rows);
+      feedback.put("cells", singleCounter.cells);
+      feedback.put("nullCells", singleCounter.nullCells);
+      feedback.put("cellBytes", singleCounter.bytes);
+
+      feedback.put("during", singleCounter.during);
+
+      if (metadata != null) {
+        feedback.put("cloumns", metadata.columnNames);
+        feedback.put("columnTypes", metadata.columnHiveTypes);
+      }
     }
 
     feedbackQueue.offer(mapper.writeValueAsString(feedback));
