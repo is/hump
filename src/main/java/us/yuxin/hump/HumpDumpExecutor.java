@@ -101,7 +101,7 @@ public class HumpDumpExecutor implements HumpExecutor {
       url = "jdbc:" + dbType + "://" + host + port + "/" + db;
     }
     if (conf.get(Hump.CONF_HUMP_JDBC_PARAMETERS) != null) {
-      if (url.indexOf("?") == -1) {
+      if (!url.contains("?")) {
         url = url + "?" + conf.get(Hump.CONF_HUMP_JDBC_PARAMETERS);
       } else {
         url = url + "&" + conf.get(Hump.CONF_HUMP_JDBC_PARAMETERS);
@@ -179,18 +179,11 @@ public class HumpDumpExecutor implements HumpExecutor {
       feedback.put("cellBytes", singleCounter.bytes);
 
       feedback.put("during", singleCounter.during);
-
-      if (metadata != null) {
-        feedback.put("cloumns", metadata.columnNames);
-        feedback.put("columnTypes", metadata.columnHiveTypes);
-      }
+      feedback.put("columns", metadata.columnNames);
+      feedback.put("columnTypes", metadata.columnHiveTypes);
     }
 
     feedbackQueue.offer(mapper.writeValueAsString(feedback));
-    // ObjectMapper mapper = new ObjectMapper();
-    // JsonNode rootNode = mapper.readValue(taskInfo.toString(), JsonNode.class);
-    // System.out.println("ID:" + rootNode.get("id").getIntValue());
-    // Thread.sleep(1500);
   }
 
   @Override
