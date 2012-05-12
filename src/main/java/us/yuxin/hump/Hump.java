@@ -40,10 +40,12 @@ public class Hump extends Configured implements Tool {
   public static final String CONF_HUMP_HAZELCAST_ENDPOINT = "hump.hazelcast.endpoint";
   public static final String CONF_HUMP_HAZELCAST_GROUP = "hump.hazelcast.group";
   public static final String CONF_HUMP_HAZELCAST_PASSWORD = "hump.hazelcast.password";
+  public static final String CONF_HUMP_HAZELCAST_LOGGING_TYPE = "hump.hazelcast.logging.type";
   public static final String CONF_HUMP_TASKS = "hump.tasks";
   public static final String CONF_HUMP_TASK_CLASS = "hump.task.class";
   public static final String CONF_HUMP_TASK_SHUFFLE = "hump.task.shuffle";
   public static final String CONF_HUMP_JDBC_PARAMETERS = "hump.jdbc.parameters";
+  public
 
   BlockingQueue<String> taskQueue;
   BlockingQueue<String> feedbackQueue;
@@ -82,6 +84,9 @@ public class Hump extends Configured implements Tool {
     cfg.setGroupConfig(new GroupConfig(
       conf.get(CONF_HUMP_HAZELCAST_GROUP),
       conf.get(CONF_HUMP_HAZELCAST_PASSWORD)));
+
+    cfg.setProperty("hazelcast.logging.type",
+      conf.get(CONF_HUMP_HAZELCAST_LOGGING_TYPE, "none"));
 
     cfg.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
     cfg.getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(true);
@@ -170,7 +175,7 @@ public class Hump extends Configured implements Tool {
     FileInputFormat.addInputPath(job, new Path("ignored"));
 
     job.setNumReduceTasks(0);
-    job.waitForCompletion(true);
+    job.waitForCompletion(false);
   }
 
 

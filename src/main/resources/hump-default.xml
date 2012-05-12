@@ -33,8 +33,8 @@
   </property>
 
   <property>
-    <name>hump.hazelcast.password</name>
-    <value>humpps</value>
+    <name>hump.hazelcast.logging.type</name>
+    <value>none</value>
   </property>
 
 </configuration>
