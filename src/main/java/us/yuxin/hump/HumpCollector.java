@@ -51,13 +51,33 @@ public class HumpCollector implements Runnable {
             feederTasks = node.get("tasks").getIntValue();
             logger.info("Feed notification: " + feederTasks + " tasks");
           }
+
+          continue;
+
         }
+
+
+        ++taskCounter;
+
+        String id = node.get("id").getTextValue();
+        int retCode = node.get("code").getIntValue();
+        long rows = node.get("rows").getLongValue();
+        long bytes = node.get("bytes").getLongValue();
+        long during = node.get("during").getLongValue();
+
+        if (retCode == 0) {
+          logger.info("" + taskCounter + "/" + feederTasks + " -- " +
+            id + ": " + rows + " rows/" + bytes + " bytes, " +
+            "during: " + during * 0.001f + "s");
+        }
+
+        // System.out.format("%05d -- %s\n", taskCounter, res);
+
       } catch (IOException e) {
         e.printStackTrace();
         // TODO Exception handler.
       }
-      ++taskCounter;
-      System.out.format("%05d -- %s\n", taskCounter, res);
+
     }
   }
 }

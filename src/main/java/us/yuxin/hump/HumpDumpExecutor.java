@@ -152,6 +152,7 @@ public class HumpDumpExecutor implements HumpExecutor {
     ObjectNode feedback = mapper.createObjectNode();
 
     String id;
+    String name;
     if (root.get("id") != null) {
       id = root.get("id").getTextValue();
     } else if (root.get("table") != null) {
@@ -160,7 +161,14 @@ public class HumpDumpExecutor implements HumpExecutor {
       id = context.getTaskAttemptID().toString() + "/" + taskCounter;
     }
 
+    if (root.get("name") != null) {
+      name = root.get("name").getTextValue();
+    } else {
+      name = id;
+    }
+
     feedback.put("id", id);
+    feedback.put("name", name);
     feedback.put("beginTime", new SimpleDateFormat("yyyyMMdd.HHmmss").format(new Date(beginTime)));
     feedback.put("target", root.get("target").getTextValue());
     feedback.put("taskid", context.getTaskAttemptID().toString());
