@@ -15,7 +15,7 @@ public class HumpFeeder implements Runnable {
   private int parallel;
 
   private BlockingQueue<String> taskQueue;
-  // private BlockingQueue<String> feedbackQueue;
+  private BlockingQueue<String> feedbackQueue;
   private Configuration conf;
   List<String> tasks;
 
@@ -25,7 +25,7 @@ public class HumpFeeder implements Runnable {
     this.conf = conf;
 
     this.taskQueue = taskQueue;
-    // this.feedbackQueue = feedbackQueue;
+    this.feedbackQueue = feedbackQueue;
     this.parallel = parallel;
 
     setupSources(sources);
@@ -52,17 +52,11 @@ public class HumpFeeder implements Runnable {
     }
   }
 
-  /*
-  public void setup(Configuration conf, File jsonSource,
-    BlockingQueue<String> taskQueue, BlockingQueue<String> feedbackQueue, int parallel) throws IOException {
-    File[] sources = new File[1];
-    sources[0] = jsonSource;
-
-    setup(conf, sources, taskQueue, feedbackQueue, parallel);
-  }
-  */
 
   public void run() {
+    String feedCmd = "{\"msg\":\"feedtasknotify\", \"tasks\":" + tasks.size() + "}";
+    feedbackQueue.offer(feedCmd);
+
     for (String task : tasks) {
       taskQueue.offer(task);
     }
