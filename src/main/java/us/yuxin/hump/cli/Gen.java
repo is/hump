@@ -27,8 +27,6 @@ public class Gen {
   String columnTypes[];
 
   String tableName;
-  String partition;
-
 
   // ----
   final static String O_COLUMNS = "columns";

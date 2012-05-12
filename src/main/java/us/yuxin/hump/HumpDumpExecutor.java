@@ -97,7 +97,7 @@ public class HumpDumpExecutor implements HumpExecutor {
       }
 
       String db = root.get("db").getTextValue();
-      url = "jdbc:" + dbType + "//" + host + port + "/" + db;
+      url = "jdbc:" + dbType + "://" + host + port + "/" + db;
     }
     if (conf.get(Hump.CONF_HUMP_JDBC_PARAMETERS) != null) {
       if (url.indexOf("?") == -1) {
@@ -107,6 +107,7 @@ public class HumpDumpExecutor implements HumpExecutor {
       }
     }
 
+    System.out.println("JDBC URL:" + url);
     source.setUrl(url);
 
     source.setUsername(root.get("username").getTextValue());

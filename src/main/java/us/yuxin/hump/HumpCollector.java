@@ -16,7 +16,6 @@ public class HumpCollector implements Runnable {
   }
 
   public void run() {
-    System.out.println("COLLECTOR-BEGIN");
     while (true) {
       String res;
       try {
@@ -29,9 +28,8 @@ public class HumpCollector implements Runnable {
       if (res.equals("STOP"))
         break;
 
-      System.out.format("%05d -- %s\n", taskCounter, res);
       ++taskCounter;
+      System.out.format("%05d -- %s\n", taskCounter, res);
     }
-    System.out.println("COLLECTOR-END " + taskCounter + " tasks");
   }
 }
