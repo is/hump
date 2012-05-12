@@ -66,9 +66,9 @@ public class HumpCollector implements Runnable {
         long during = node.get("during").getLongValue();
 
         if (retCode == 0) {
-          logger.info("" + taskCounter + "/" + feederTasks + " -- " +
-            id + ": " + rows + " rows/" + bytes + " bytes, " +
-            "during: " + during * 0.001f + "s");
+          String msg = String.format("%d/%d -- %s: %d rows, %d bytes, during %.3fs",
+            taskCounter, feederTasks, id, rows, bytes, during * 0.001f);
+          logger.info(msg);
         }
 
         // System.out.format("%05d -- %s\n", taskCounter, res);
