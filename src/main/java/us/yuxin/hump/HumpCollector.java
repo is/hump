@@ -62,7 +62,7 @@ public class HumpCollector implements Runnable {
         String id = node.get("id").getTextValue();
         int retCode = node.get("code").getIntValue();
         long rows = node.get("rows").getLongValue();
-        long bytes = node.get("bytes").getLongValue();
+        long bytes = node.get("cellBytes").getLongValue();
         long during = node.get("during").getLongValue();
 
         if (retCode == 0) {
