@@ -45,6 +45,10 @@ public class Hump extends Configured implements Tool {
   public static final String CONF_HUMP_TASK_CLASS = "hump.task.class";
   public static final String CONF_HUMP_TASK_SHUFFLE = "hump.task.shuffle";
   public static final String CONF_HUMP_JDBC_PARAMETERS = "hump.jdbc.parameters";
+  public static final String CONF_HUMP_RESULT_FULL = "hump.result.full";
+  public static final String CONF_HUMP_RESULT_SUMMARY = "hump.result.summary";
+  public static final String CONF_HUMP_RESULT_FAILURE = "hump.result.failure";
+
 
   BlockingQueue<String> taskQueue;
   BlockingQueue<String> feedbackQueue;
