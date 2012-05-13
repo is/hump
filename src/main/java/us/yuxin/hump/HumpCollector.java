@@ -72,12 +72,14 @@ public class HumpCollector implements Runnable {
 
         String id = root.get("id").getTextValue();
         int retCode = root.get("code").getIntValue();
-        long rows = root.get("rows").getLongValue();
-        long bytes = root.get("cellBytes").getLongValue();
-        long during = root.get("during").getLongValue();
 
         if (retCode == 0) {
           successCounter += 1;
+
+          long rows = root.get("rows").getLongValue();
+          long bytes = root.get("cellBytes").getLongValue();
+          long during = root.get("during").getLongValue();
+
           totalRows += rows;
           totalBytes += bytes;
           totalDuring += during;
