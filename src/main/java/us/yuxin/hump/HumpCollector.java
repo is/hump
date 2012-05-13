@@ -90,7 +90,7 @@ public class HumpCollector implements Runnable {
         } else {
           failureCounter += 1;
           String msg = String.format("%d/%d {%s} failed, msg: %s",
-            taskCounter, feederTasks, id, root.get("msg").getTextValue());
+            taskCounter, feederTasks, id, root.get("message").getTextValue());
           log.info(msg);
         }
       } catch (IOException e) {
