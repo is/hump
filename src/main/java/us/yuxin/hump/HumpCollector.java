@@ -20,7 +20,7 @@ public class HumpCollector implements Runnable {
 
   BlockingQueue<String> feedbackQueue;
 
-  Log logger = LogFactory.getLog(HumpCollector.class);
+  Log log = LogFactory.getLog(HumpCollector.class);
 
   public void setup(Configuration conf, BlockingQueue<String> feedbackQueue) {
     this.conf = conf;
@@ -61,7 +61,7 @@ public class HumpCollector implements Runnable {
 
           if (msgType.equals("feed.notify.tasks")) {
             feederTasks = root.get("tasks").getIntValue();
-            logger.info("Feed notification: " + feederTasks + " tasks");
+            log.info("Feed notification: " + feederTasks + " tasks");
           }
 
           continue;
@@ -82,14 +82,14 @@ public class HumpCollector implements Runnable {
           totalBytes += bytes;
           totalDuring += during;
 
-          String msg = String.format("%d/%d {%s} rows:%,d, inbytes:%,d, during %.3fs",
+          String msg = String.format("%d/%d {%s} rows:%,d, inbytes:%,d, during:%.3fs",
             taskCounter, feederTasks, id, rows, bytes, during * 0.001f);
-          logger.info(msg);
+          log.info(msg);
         } else {
           failureCounter += 1;
           String msg = String.format("%d/%d {%s} failed, msg: %s",
             taskCounter, feederTasks, id, root.get("msg").getTextValue());
-          logger.info(msg);
+          log.info(msg);
         }
       } catch (IOException e) {
         e.printStackTrace();
@@ -97,7 +97,7 @@ public class HumpCollector implements Runnable {
       }
     }
 
-    logger.info(String.format("-- Statistic -- use %.2fs, %d tables (%d failed/%.3f%%), total row:%,d inbytes:%,d",
+    log.info(String.format("-- Statistic -- use %.2fs, %d tables (%d failed/%.3f%%), total row:%,d inbytes:%,d",
       (System.currentTimeMillis() - beginTS) * 0.001f, taskCounter, failureCounter,
       failureCounter * 1f / taskCounter, totalRows, totalBytes));
   }
