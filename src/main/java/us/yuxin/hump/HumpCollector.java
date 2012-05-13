@@ -14,10 +14,9 @@ import org.codehaus.jackson.map.ObjectMapper;
 /**
  *
  * Output:
- * hump-res-full.json
- * hump-res-summary.json
- * hump-res-success.json
- * hump-res-failure.json
+ * hump-log-full.json
+ * hump-log-summary.json
+ * hump-log-failure.json
  */
 public class HumpCollector implements Runnable {
   Configuration conf;
@@ -31,7 +30,7 @@ public class HumpCollector implements Runnable {
   BlockingQueue<String> feedbackQueue;
   Log log = LogFactory.getLog(HumpCollector.class);
 
-  FileWriter resFull, resSummary, resFailure;
+  FileWriter fullLog, summaryLog, failureLog;
 
   public void setup(Configuration conf, BlockingQueue<String> feedbackQueue) {
     this.conf = conf;
@@ -41,9 +40,9 @@ public class HumpCollector implements Runnable {
     this.successCounter = 0;
     this.failureCounter = 0;
 
-    this.resFailure = null;
-    this.resSummary = null;
-    this.resFull = null;
+    this.failureLog = null;
+    this.summaryLog = null;
+    this.fullLog = null;
   }
 
 
@@ -52,7 +51,7 @@ public class HumpCollector implements Runnable {
     ObjectMapper om  = new ObjectMapper();
 
     long totalBytes = 0;
-    long totalDuring = 0;
+    // long totalDuring = 0;
     long totalRows = 0;
 
     long beginTS = System.currentTimeMillis();
@@ -70,7 +69,7 @@ public class HumpCollector implements Runnable {
       if (res.equals("STOP"))
         break;
 
-      LogFileUtils.writeln(resFull, res);
+      LogFileUtils.writeln(fullLog, res);
 
       try {
         JsonNode root = om.readValue(res, JsonNode.class);
@@ -99,20 +98,20 @@ public class HumpCollector implements Runnable {
 
           totalRows += rows;
           totalBytes += bytes;
-          totalDuring += during;
+          // totalDuring += during;
 
           String msg = String.format("%d/%d {%s} rows:%,d, inbytes:%,d, during:%.3fs",
             taskCounter, feederTasks, id, rows, bytes, during * 0.001f);
           log.info(msg);
-          LogFileUtils.writelnWithTS(resSummary, msg);
+          LogFileUtils.writelnWithTS(summaryLog, msg);
         } else {
           failureCounter += 1;
           String msg = String.format("%d/%d {%s} failed, msg: %s",
             taskCounter, feederTasks, id, root.get("message").getTextValue());
           log.info(msg);
 
-          LogFileUtils.writelnWithTS(resSummary, msg);
-          LogFileUtils.writelnWithTS(resFailure, msg);
+          LogFileUtils.writelnWithTS(summaryLog, msg);
+          LogFileUtils.writelnWithTS(failureLog, msg);
         }
       } catch (IOException e) {
         e.printStackTrace();
@@ -129,18 +128,18 @@ public class HumpCollector implements Runnable {
 
 
   private void openLogFiles() {
-    resFull = LogFileUtils.open(conf.get(Hump.CONF_HUMP_RESULT_FULL, "hump-res-full"));
-    resSummary = LogFileUtils.open(conf.get(Hump.CONF_HUMP_RESULT_SUMMARY, "hump-res-summary"));
-    resFailure = LogFileUtils.open(conf.get(Hump.CONF_HUMP_RESULT_FAILURE, "hump-res-failure"));
+    fullLog = LogFileUtils.open(conf.get(Hump.CONF_HUMP_RESULT_FULL, "hump-log-full"));
+    summaryLog = LogFileUtils.open(conf.get(Hump.CONF_HUMP_RESULT_SUMMARY, "hump-log-summary"));
+    failureLog = LogFileUtils.open(conf.get(Hump.CONF_HUMP_RESULT_FAILURE, "hump-log-failure"));
   }
 
   private void closeLogFiles() {
-    LogFileUtils.close(resFull);
-    LogFileUtils.close(resSummary);
-    LogFileUtils.close(resFailure);
+    LogFileUtils.close(fullLog);
+    LogFileUtils.close(summaryLog);
+    LogFileUtils.close(failureLog);
 
-    resFull = null;
-    resSummary = null;
-    resFailure = null;
+    fullLog = null;
+    summaryLog = null;
+    failureLog = null;
   }
 }
