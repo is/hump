@@ -13,6 +13,9 @@ public class HumpCollector implements Runnable {
   Configuration conf;
 
   int taskCounter;
+  int successCounter;
+  int failureCounter;
+
   int feederTasks;
 
   BlockingQueue<String> feedbackQueue;
@@ -22,11 +25,20 @@ public class HumpCollector implements Runnable {
   public void setup(Configuration conf, BlockingQueue<String> feedbackQueue) {
     this.conf = conf;
     this.feedbackQueue = feedbackQueue;
+
     this.taskCounter = 0;
+    this.successCounter = 0;
+    this.failureCounter = 0;
   }
 
   public void run() {
     ObjectMapper om  = new ObjectMapper();
+
+    long totalBytes = 0;
+    long totalDuring = 0;
+    long totalRows = 0;
+
+    long beginTS = System.currentTimeMillis();
 
     while (true) {
       String res;
@@ -42,13 +54,13 @@ public class HumpCollector implements Runnable {
         break;
 
       try {
-        JsonNode node = om.readValue(res, JsonNode.class);
+        JsonNode root = om.readValue(res, JsonNode.class);
 
-        if (node.get("type") != null) {
-          String msgType = node.get("type").getTextValue();
+        if (root.get("type") != null) {
+          String msgType = root.get("type").getTextValue();
 
           if (msgType.equals("feed.notify.tasks")) {
-            feederTasks = node.get("tasks").getIntValue();
+            feederTasks = root.get("tasks").getIntValue();
             logger.info("Feed notification: " + feederTasks + " tasks");
           }
 
@@ -56,28 +68,37 @@ public class HumpCollector implements Runnable {
 
         }
 
-
         ++taskCounter;
 
-        String id = node.get("id").getTextValue();
-        int retCode = node.get("code").getIntValue();
-        long rows = node.get("rows").getLongValue();
-        long bytes = node.get("cellBytes").getLongValue();
-        long during = node.get("during").getLongValue();
+        String id = root.get("id").getTextValue();
+        int retCode = root.get("code").getIntValue();
+        long rows = root.get("rows").getLongValue();
+        long bytes = root.get("cellBytes").getLongValue();
+        long during = root.get("during").getLongValue();
 
         if (retCode == 0) {
-          String msg = String.format("%d/%d -- %s: %,d rows, %,d bytes, during %.3fs",
+          successCounter += 1;
+          totalRows += rows;
+          totalBytes += bytes;
+          totalDuring += during;
+
+          String msg = String.format("%d/%d -- %s: rows:%,d, inbytes:%,d, during %.3fs",
             taskCounter, feederTasks, id, rows, bytes, during * 0.001f);
           logger.info(msg);
+        } else {
+          failureCounter += 1;
+          String msg = String.format("%d/%d -- %s: failed, msg: %s",
+            taskCounter, feederTasks, id, root.get("msg").getTextValue());
+          logger.info(msg);
         }
-
-        // System.out.format("%05d -- %s\n", taskCounter, res);
-
       } catch (IOException e) {
         e.printStackTrace();
         // TODO Exception handler.
       }
-
     }
+
+    logger.info(String.format("-- Statistic -- use %.2fs, %d tables (%d failed/%.3f%%), total row:%,d inbytes:%,d",
+      (System.currentTimeMillis() - beginTS) * 0.001f, taskCounter, failureCounter,
+      failureCounter * 1f / taskCounter, totalRows, totalBytes));
   }
 }
