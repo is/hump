@@ -82,12 +82,12 @@ public class HumpCollector implements Runnable {
           totalBytes += bytes;
           totalDuring += during;
 
-          String msg = String.format("%d/%d -- %s: rows:%,d, inbytes:%,d, during %.3fs",
+          String msg = String.format("%d/%d [%s] -- rows:%,d, inbytes:%,d, during %.3fs",
             taskCounter, feederTasks, id, rows, bytes, during * 0.001f);
           logger.info(msg);
         } else {
           failureCounter += 1;
-          String msg = String.format("%d/%d -- %s: failed, msg: %s",
+          String msg = String.format("%d/%d [%s] -- failed, msg: %s",
             taskCounter, feederTasks, id, root.get("msg").getTextValue());
           logger.info(msg);
         }
