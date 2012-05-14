@@ -52,6 +52,10 @@ public class JdbcSourceMetadata {
       .put(Types.LONGNVARCHAR, "string")
       .put(Types.CLOB, "string")
 
+      .put(Types.BLOB, "string")
+      .put(Types.LONGVARBINARY, "string")
+      .put(Types.VARBINARY, "string")
+
       .build();
   }
 
