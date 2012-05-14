@@ -174,13 +174,13 @@ public class HumpDumpExecutor implements HumpExecutor {
     feedback.put("taskid", context.getTaskAttemptID().toString());
 
     if (ex != null) {
-      feedback.put("code", 1);
+      feedback.put("code", Hump.RETCODE_ERROR);
       feedback.put("status", "ERROR");
       feedback.put("message", ex.getMessage());
       feedback.put("exception", Throwables.getStackTraceAsString(ex));
     } else {
       feedback.put("status", "OK");
-      feedback.put("code", 0);
+      feedback.put("code", Hump.RETCODE_OK);
       feedback.put("rows", singleCounter.rows);
       feedback.put("cells", singleCounter.cells);
       feedback.put("nullCells", singleCounter.nullCells);

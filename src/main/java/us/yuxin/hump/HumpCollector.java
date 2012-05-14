@@ -89,7 +89,7 @@ public class HumpCollector implements Runnable {
         String id = root.get("id").getTextValue();
         int retCode = root.get("code").getIntValue();
 
-        if (retCode == 0) {
+        if (retCode > Hump.RETCODE_ERROR) {
           successCounter += 1;
 
           long rows = root.get("rows").getLongValue();
