@@ -250,7 +250,7 @@ public class HumpDumpExecutor implements HumpExecutor {
     } else if (skipCode == SKIP_CODE_UPDATE) {
       feed.put("code", Hump.RETCODE_SKIP);
       feed.put("status", "SKIP");
-      feed.put("message", "<" + realTarget + "> existed");
+      feed.put("message", "[" + realTarget + "] existed");
     } else {
       feed.put("status", "OK");
       feed.put("code", Hump.RETCODE_OK);
