@@ -48,9 +48,11 @@ public class Hump extends Configured implements Tool {
   public static final String CONF_HUMP_RESULT_FULL = "hump.result.full";
   public static final String CONF_HUMP_RESULT_SUMMARY = "hump.result.summary";
   public static final String CONF_HUMP_RESULT_FAILURE = "hump.result.failure";
+  public static final String CONF_HUMP_UPDATE = "hump.update";
 
   public static final int RETCODE_ERROR = 0;
   public static final int RETCODE_OK = 1;
+  public static final int RETCODE_SKIP = 2;
 
   BlockingQueue<String> taskQueue;
   BlockingQueue<String> feedbackQueue;

@@ -27,8 +27,8 @@ public class HumpDumpExecutor implements HumpExecutor {
   BlockingQueue<String> feedbackQueue;
   HazelcastClient client;
 
-
   int taskCounter;
+  boolean humpUpdate;
 
   StoreCounter globalCounter;
   StoreCounter singleCounter;
@@ -53,27 +53,16 @@ public class HumpDumpExecutor implements HumpExecutor {
   Exception taskEx;
 
   Mapper.Context context;
+  int skipCode;
 
-  private void setupIdAndName() {
-    if (task.get("id") != null) {
-      id = task.get("id").getTextValue();
-    } else if (task.get("table") != null) {
-      id = task.get("table").getTextValue();
-    } else {
-      id = context.getTaskAttemptID().toString() + "/" + taskCounter;
-    }
-
-    if (task.get("name") != null) {
-      name = task.get("name").getTextValue();
-    } else {
-      name = id;
-    }
-  }
+  private final static int SKIP_CODE_NOSKIP = 0;
+  private final static int SKIP_CODE_UPDATE = 1;
 
 
   @Override
   public void setup(Mapper.Context context) throws IOException, InterruptedException {
     this.context = context;
+
     conf = context.getConfiguration();
     client = HumpGridClient.getClient(conf);
     feedbackQueue = client.getQueue(Hump.HUMP_HAZELCAST_FEEDBACK_QUEUE);
@@ -93,12 +82,30 @@ public class HumpDumpExecutor implements HumpExecutor {
       }
     }
 
+    humpUpdate = conf.getBoolean(Hump.CONF_HUMP_UPDATE, false);
     store = new RCFileStore(fs, conf, codec);
 
     globalCounter = new StoreCounter();
     singleCounter = new StoreCounter();
     taskCounter = 0;
     mapper = new ObjectMapper();
+  }
+
+
+  private void setupIdAndName() {
+    if (task.get("id") != null) {
+      id = task.get("id").getTextValue();
+    } else if (task.get("table") != null) {
+      id = task.get("table").getTextValue();
+    } else {
+      id = context.getTaskAttemptID().toString() + "/" + taskCounter;
+    }
+
+    if (task.get("name") != null) {
+      name = task.get("name").getTextValue();
+    } else {
+      name = id;
+    }
   }
 
 
@@ -153,19 +160,8 @@ public class HumpDumpExecutor implements HumpExecutor {
   }
 
 
-  @Override
-  public void run(Mapper.Context context, Text serial, Text taskInfo) throws IOException, InterruptedException {
-    System.out.println("HumpDumpExecutor.run -- " + serial.toString() + ":" + taskInfo.toString());
-
-    singleCounter.reset();
-    ++taskCounter;
-    taskBeginTime = System.currentTimeMillis();
-
-    task = mapper.readValue(taskInfo.toString(), JsonNode.class);
-    setupSource();
-
+  private void doDump() throws IOException {
     metadata = null;
-    target = task.get("target").getTextValue();
     taskEx = null;
 
     try {
@@ -183,10 +179,36 @@ public class HumpDumpExecutor implements HumpExecutor {
       e.printStackTrace();
       taskEx = e;
     }
+  }
+
+
+  @Override
+  public void run(Mapper.Context context, Text serial, Text taskInfo) throws IOException, InterruptedException {
+    System.out.println("HumpDumpExecutor.run -- " + serial.toString() + ":" + taskInfo.toString());
+
+    singleCounter.reset();
+    skipCode = SKIP_CODE_NOSKIP;
+
+    ++taskCounter;
+    taskBeginTime = System.currentTimeMillis();
+
+    task = mapper.readValue(taskInfo.toString(), JsonNode.class);
+    target = task.get("target").getTextValue();
+
+    if (humpUpdate) {
+      if (isTargetExist()) {
+        skipCode = SKIP_CODE_UPDATE;
+      }
+    }
+
+    if (skipCode == SKIP_CODE_NOSKIP) {
+      setupSource();
+      doDump();
+    }
 
     taskEndTime = System.currentTimeMillis();
-    singleCounter.during = taskEndTime - taskBeginTime;
 
+    singleCounter.during = taskEndTime - taskBeginTime;
     globalCounter.plus(singleCounter);
 
     if (taskEx != null) {
@@ -197,6 +219,11 @@ public class HumpDumpExecutor implements HumpExecutor {
 
     setupIdAndName();
     feedback();
+  }
+
+  private boolean isTargetExist() throws IOException {
+    Path path = new Path(target);
+    return (fs.exists(path));
   }
 
 
@@ -214,6 +241,10 @@ public class HumpDumpExecutor implements HumpExecutor {
       feed.put("status", "ERROR");
       feed.put("message", taskEx.getMessage());
       feed.put("exception", Throwables.getStackTraceAsString(taskEx));
+    } else if (skipCode == SKIP_CODE_UPDATE) {
+      feed.put("code", Hump.RETCODE_SKIP);
+      feed.put("status", "SKIP");
+      feed.put("message", "'" + target + "' is existed, skipped");
     } else {
       feed.put("status", "OK");
       feed.put("code", Hump.RETCODE_OK);
