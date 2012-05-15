@@ -27,22 +27,59 @@ public class HumpDumpExecutor implements HumpExecutor {
   BlockingQueue<String> feedbackQueue;
   HazelcastClient client;
 
+
+  int taskCounter;
+
   StoreCounter globalCounter;
   StoreCounter singleCounter;
-  int taskCounter;
+
+  ObjectMapper mapper;
+
+  // --- Task variables
+  long taskBeginTime;
+  long taskEndTime;
+
+  String url;
+  String id;
+  String name;
+  String target;
+
+  JsonNode task;
+  ObjectNode feed;
+
+  JdbcSource source;
+  JdbcSourceMetadata metadata;
+
+  Exception taskEx;
+
+  Mapper.Context context;
+
+  private void setupIdAndName() {
+    if (task.get("id") != null) {
+      id = task.get("id").getTextValue();
+    } else if (task.get("table") != null) {
+      id = task.get("table").getTextValue();
+    } else {
+      id = context.getTaskAttemptID().toString() + "/" + taskCounter;
+    }
+
+    if (task.get("name") != null) {
+      name = task.get("name").getTextValue();
+    } else {
+      name = id;
+    }
+  }
+
 
   @Override
   public void setup(Mapper.Context context) throws IOException, InterruptedException {
+    this.context = context;
     conf = context.getConfiguration();
     client = HumpGridClient.getClient(conf);
     feedbackQueue = client.getQueue(Hump.HUMP_HAZELCAST_FEEDBACK_QUEUE);
 
     fs = FileSystem.get(context.getConfiguration());
     CompressionCodec codec = null;
-
-    globalCounter = new StoreCounter();
-    singleCounter = new StoreCounter();
-    taskCounter = 0;
 
     if (conf.get(Hump.CONF_HUMP_COMPRESSION_CODEC) != null) {
       try {
@@ -55,51 +92,44 @@ public class HumpDumpExecutor implements HumpExecutor {
         throw new IOException("Invalid compression codec", e);
       }
     }
+
     store = new RCFileStore(fs, conf, codec);
+
+    globalCounter = new StoreCounter();
+    singleCounter = new StoreCounter();
+    taskCounter = 0;
+    mapper = new ObjectMapper();
   }
 
-  @Override
-  public void run(Mapper.Context context, Text serial, Text taskInfo) throws IOException, InterruptedException {
-    System.out.println("HumpDumpExecutor.run -- " + serial.toString() + ":" + taskInfo.toString());
-    singleCounter.reset();
-    ++taskCounter;
-    long beginTime;
-    long endTime;
 
-    beginTime = System.currentTimeMillis();
-
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode root = mapper.readValue(taskInfo.toString(), JsonNode.class);
-
-    JdbcSource source = new JdbcSource();
-
+  private void setupSource() {
+    source = new JdbcSource();
     String dbType = "mysql";
-    if (root.get("type") != null) {
-      dbType = root.get("type").getTextValue();
+    if (task.get("type") != null) {
+      dbType = task.get("type").getTextValue();
     }
 
-    if (root.get("driver") != null) {
-      source.setDriver(root.get("driver").getTextValue());
+    if (task.get("driver") != null) {
+      source.setDriver(task.get("driver").getTextValue());
     } else {
       if (dbType.equals("mysql")) {
         source.setDriver("com.mysql.jdbc.Driver");
       }
     }
 
-    String url;
-
-    if (root.get("url") != null) {
-      url = root.get("url").getTextValue();
+    if (task.get("url") != null) {
+      url = task.get("url").getTextValue();
     } else {
-      String host = root.get("host").getTextValue();
+      String host = task.get("host").getTextValue();
       String port = "";
-      if (root.get("port") != null) {
-        port = ":" + root.get("port").getTextValue();
+      if (task.get("port") != null) {
+        port = ":" + task.get("port").getTextValue();
       }
 
-      String db = root.get("db").getTextValue();
+      String db = task.get("db").getTextValue();
       url = "jdbc:" + dbType + "://" + host + port + "/" + db;
     }
+
     if (conf.get(Hump.CONF_HUMP_JDBC_PARAMETERS) != null) {
       if (!url.contains("?")) {
         url = url + "?" + conf.get(Hump.CONF_HUMP_JDBC_PARAMETERS);
@@ -111,19 +141,33 @@ public class HumpDumpExecutor implements HumpExecutor {
     System.out.println("JDBC URL:" + url);
     source.setUrl(url);
 
-    source.setUsername(root.get("username").getTextValue());
-    if (root.get("password") != null)
-      source.setPassword(root.get("password").getTextValue());
-    if (root.get("query") != null)
-      source.setQuery(root.get("query").getTextValue());
-    if (root.get("table") != null) {
-      String stmt = "SELECT * FROM " + root.get("table").getTextValue();
+    source.setUsername(task.get("username").getTextValue());
+    if (task.get("password") != null)
+      source.setPassword(task.get("password").getTextValue());
+    if (task.get("query") != null)
+      source.setQuery(task.get("query").getTextValue());
+    if (task.get("table") != null) {
+      String stmt = "SELECT * FROM " + task.get("table").getTextValue();
       source.setQuery(stmt);
     }
+  }
 
-    JdbcSourceMetadata metadata = null;
-    String target = root.get("target").getTextValue();
-    Exception ex = null;
+
+  @Override
+  public void run(Mapper.Context context, Text serial, Text taskInfo) throws IOException, InterruptedException {
+    System.out.println("HumpDumpExecutor.run -- " + serial.toString() + ":" + taskInfo.toString());
+
+    singleCounter.reset();
+    ++taskCounter;
+    taskBeginTime = System.currentTimeMillis();
+
+    task = mapper.readValue(taskInfo.toString(), JsonNode.class);
+    setupSource();
+
+    metadata = null;
+    target = task.get("target").getTextValue();
+    taskEx = null;
+
     try {
       source.open();
       metadata = new JdbcSourceMetadata();
@@ -131,67 +175,58 @@ public class HumpDumpExecutor implements HumpExecutor {
 
       store.store(new Path(target), source, null, singleCounter);
       source.close();
-      endTime = System.currentTimeMillis();
-      singleCounter.during = endTime - beginTime;
+
     } catch (SQLException e) {
       e.printStackTrace();
-      ex = e;
+      taskEx = e;
     } catch (ClassNotFoundException e) {
       e.printStackTrace();
-      ex = e;
+      taskEx = e;
     }
 
+    taskEndTime = System.currentTimeMillis();
+    singleCounter.during = taskEndTime - taskBeginTime;
+
     globalCounter.plus(singleCounter);
-    if (ex != null) {
+
+    if (taskEx != null) {
       System.out.println("ERROR");
     } else {
       System.out.println("OK...");
     }
 
-    // ---- Send feedback.
-    ObjectNode feedback = mapper.createObjectNode();
+    setupIdAndName();
+    feedback();
+  }
 
-    String id;
-    String name;
-    if (root.get("id") != null) {
-      id = root.get("id").getTextValue();
-    } else if (root.get("table") != null) {
-      id = root.get("table").getTextValue();
+
+  private void feedback() throws IOException {
+    // ---- Send feed.
+    feed = mapper.createObjectNode();
+    feed.put("id", id);
+    feed.put("name", name);
+    feed.put("beginTime", new SimpleDateFormat("yyyyMMdd.HHmmss").format(new Date(taskBeginTime)));
+    feed.put("target", task.get("target").getTextValue());
+    feed.put("taskid", context.getTaskAttemptID().toString());
+
+    if (taskEx != null) {
+      feed.put("code", Hump.RETCODE_ERROR);
+      feed.put("status", "ERROR");
+      feed.put("message", taskEx.getMessage());
+      feed.put("exception", Throwables.getStackTraceAsString(taskEx));
     } else {
-      id = context.getTaskAttemptID().toString() + "/" + taskCounter;
+      feed.put("status", "OK");
+      feed.put("code", Hump.RETCODE_OK);
+      feed.put("rows", singleCounter.rows);
+      feed.put("cells", singleCounter.cells);
+      feed.put("nullCells", singleCounter.nullCells);
+      feed.put("cellBytes", singleCounter.bytes);
+
+      feed.put("during", singleCounter.during);
+      feed.put("columns", metadata.columnNames);
+      feed.put("columnTypes", metadata.columnHiveTypes);
     }
-
-    if (root.get("name") != null) {
-      name = root.get("name").getTextValue();
-    } else {
-      name = id;
-    }
-
-    feedback.put("id", id);
-    feedback.put("name", name);
-    feedback.put("beginTime", new SimpleDateFormat("yyyyMMdd.HHmmss").format(new Date(beginTime)));
-    feedback.put("target", root.get("target").getTextValue());
-    feedback.put("taskid", context.getTaskAttemptID().toString());
-
-    if (ex != null) {
-      feedback.put("code", Hump.RETCODE_ERROR);
-      feedback.put("status", "ERROR");
-      feedback.put("message", ex.getMessage());
-      feedback.put("exception", Throwables.getStackTraceAsString(ex));
-    } else {
-      feedback.put("status", "OK");
-      feedback.put("code", Hump.RETCODE_OK);
-      feedback.put("rows", singleCounter.rows);
-      feedback.put("cells", singleCounter.cells);
-      feedback.put("nullCells", singleCounter.nullCells);
-      feedback.put("cellBytes", singleCounter.bytes);
-
-      feedback.put("during", singleCounter.during);
-      feedback.put("columns", metadata.columnNames);
-      feedback.put("columnTypes", metadata.columnHiveTypes);
-    }
-
-    feedbackQueue.offer(mapper.writeValueAsString(feedback));
+    feedbackQueue.offer(mapper.writeValueAsString(feed));
   }
 
   @Override
