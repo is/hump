@@ -215,8 +215,10 @@ public class HumpDumpExecutor implements HumpExecutor {
 
     if (taskEx != null) {
       System.out.println("ERROR");
+    } else if (skipCode != SKIP_CODE_NOSKIP) {
+      System.out.println("SKIP");
     } else {
-      System.out.println("OK...");
+      System.out.println("OK");
     }
 
     setupIdAndName();
