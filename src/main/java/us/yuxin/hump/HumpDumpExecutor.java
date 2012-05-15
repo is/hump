@@ -22,6 +22,7 @@ import org.codehaus.jackson.node.ObjectNode;
 public class HumpDumpExecutor implements HumpExecutor {
   FileSystem fs;
   RCFileStore store;
+  CompressionCodec codec;
   Configuration conf;
 
   BlockingQueue<String> feedbackQueue;
@@ -68,7 +69,7 @@ public class HumpDumpExecutor implements HumpExecutor {
     feedbackQueue = client.getQueue(Hump.HUMP_HAZELCAST_FEEDBACK_QUEUE);
 
     fs = FileSystem.get(context.getConfiguration());
-    CompressionCodec codec = null;
+    codec = null;
 
     if (conf.get(Hump.CONF_HUMP_COMPRESSION_CODEC) != null) {
       try {
@@ -222,7 +223,13 @@ public class HumpDumpExecutor implements HumpExecutor {
   }
 
   private boolean isTargetExist() throws IOException {
-    boolean exists  = fs.exists(new Path(target));
+    boolean exists;
+    if (codec != null) {
+      exists = fs.exists(new Path(target + codec.getDefaultExtension()));
+    } else {
+      exists  = fs.exists(new Path(target));
+    }
+
     System.out.println("ISTargetExist:" + exists);
     return exists;
   }
