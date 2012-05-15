@@ -160,7 +160,7 @@ public class HumpDumpExecutor implements HumpExecutor {
   }
 
 
-  private void doDump() throws IOException {
+  private void dumpSource() throws IOException {
     metadata = null;
     taskEx = null;
 
@@ -203,7 +203,7 @@ public class HumpDumpExecutor implements HumpExecutor {
 
     if (skipCode == SKIP_CODE_NOSKIP) {
       setupSource();
-      doDump();
+      dumpSource();
     }
 
     taskEndTime = System.currentTimeMillis();
@@ -222,8 +222,9 @@ public class HumpDumpExecutor implements HumpExecutor {
   }
 
   private boolean isTargetExist() throws IOException {
-    Path path = new Path(target);
-    return (fs.exists(path));
+    boolean exists  = fs.exists(new Path(target));
+    System.out.println("ISTargetExist:" + exists);
+    return exists;
   }
 
 
