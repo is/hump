@@ -44,6 +44,7 @@ public class HumpDumpExecutor implements HumpExecutor {
   String id;
   String name;
   String target;
+  String realTarget;
 
   JsonNode task;
   ObjectNode feed;
@@ -223,15 +224,12 @@ public class HumpDumpExecutor implements HumpExecutor {
   }
 
   private boolean isTargetExist() throws IOException {
-    boolean exists;
     if (codec != null) {
-      exists = fs.exists(new Path(target + codec.getDefaultExtension()));
+      realTarget = target + codec.getDefaultExtension();
     } else {
-      exists  = fs.exists(new Path(target));
+      realTarget = target;
     }
-
-    System.out.println("ISTargetExist:" + exists);
-    return exists;
+    return fs.exists(new Path(realTarget));
   }
 
 
@@ -252,7 +250,7 @@ public class HumpDumpExecutor implements HumpExecutor {
     } else if (skipCode == SKIP_CODE_UPDATE) {
       feed.put("code", Hump.RETCODE_SKIP);
       feed.put("status", "SKIP");
-      feed.put("message", "'" + target + "' is existed, skipped");
+      feed.put("message", "<" + realTarget + "> existed");
     } else {
       feed.put("status", "OK");
       feed.put("code", Hump.RETCODE_OK);
