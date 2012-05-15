@@ -89,7 +89,14 @@ public class HumpCollector implements Runnable {
         String id = root.get("id").getTextValue();
         int retCode = root.get("code").getIntValue();
 
-        if (retCode > Hump.RETCODE_ERROR) {
+        if (retCode == Hump.RETCODE_SKIP) {
+          successCounter += 1;
+
+          String msg = String.format("%d/%d {%s} skipped, %s",
+            taskCounter, feederTasks, id, root.get("message").getTextValue());
+          log.info(msg);
+          LogFileUtils.writelnWithTS(summaryLog, msg);
+        } else if (retCode == Hump.RETCODE_OK) {
           successCounter += 1;
 
           long rows = root.get("rows").getLongValue();
@@ -104,7 +111,7 @@ public class HumpCollector implements Runnable {
             taskCounter, feederTasks, id, rows, bytes, during * 0.001f);
           log.info(msg);
           LogFileUtils.writelnWithTS(summaryLog, msg);
-        } else {
+        } else { // RETCODE_ERROR
           failureCounter += 1;
           String msg = String.format("%d/%d {%s} failed, msg: %s",
             taskCounter, feederTasks, id, root.get("message").getTextValue());
