@@ -32,6 +32,37 @@ public class HumpCollector implements Runnable {
 
   FileWriter fullLog, summaryLog, failureLog;
 
+  public static class ArrayCounter {
+    int counter[];
+    int size;
+    int used;
+    int point;
+
+    public ArrayCounter(int size) {
+      this.size = size;
+      this.used = 0;
+      this.point = 0;
+      this.counter = new int[size];
+    }
+
+    public void push(int v) {
+      counter[point] = v;
+      if (used != size) {
+        ++used;
+      }
+      ++point;
+      if (point == size)
+        point = 0;
+    }
+
+    public float average() {
+      int sum = 0;
+      for (int i = 0; i < used; ++i) {
+        sum += counter[i];
+      }
+      return sum * 1f / used;
+    }
+  }
 
   public void setup(Configuration conf, BlockingQueue<String> feedbackQueue) {
     this.conf = conf;
@@ -57,8 +88,9 @@ public class HumpCollector implements Runnable {
     long beginTS = System.currentTimeMillis();
 
     long curSecond = 0;
-    long secondTables = 0;
-    long secondCounter = 0;
+    int secondCounter = 0;
+    ArrayCounter tableCounter = new ArrayCounter(10);
+    float tableSpeed = 0f;
 
     while (true) {
       String res;
@@ -97,7 +129,8 @@ public class HumpCollector implements Runnable {
           long lastSecond = System.currentTimeMillis() / 1000;
           if (lastSecond != curSecond) {
             curSecond = lastSecond;
-            secondTables = secondCounter;
+            tableCounter.push(secondCounter);
+            tableSpeed = tableCounter.average();
             secondCounter = 0;
           }
           secondCounter += 1;
@@ -121,8 +154,8 @@ public class HumpCollector implements Runnable {
           totalBytes += bytes;
           // totalDuring += during;
 
-          String msg = String.format("%d/%d {%s} rows:%,d, inbytes:%,d, during:%.3fs -- %d tbls/s",
-            taskCounter, feederTasks, id, rows, bytes, during * 0.001f, secondTables);
+          String msg = String.format("%d/%d {%s} rows:%,d, inbytes:%,d, during:%.3fs --  %.1fT/s",
+            taskCounter, feederTasks, id, rows, bytes, during * 0.001f, tableSpeed);
           log.info(msg);
           LogFileUtils.writelnWithTS(summaryLog, msg);
         } else { // RETCODE_ERROR
