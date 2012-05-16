@@ -50,6 +50,9 @@ public class Hump extends Configured implements Tool {
   public static final String CONF_HUMP_RESULT_FAILURE = "hump.result.failure";
   public static final String CONF_HUMP_UPDATE = "hump.update";
 
+  public static final String CONF_HUMP_PATH_TASKFILE = "hump.path.taskfile";
+  public static final String CONF_HUMP_PATH_JAR = "hump.path.jar";
+
   public static final int RETCODE_ERROR = 0;
   public static final int RETCODE_OK = 1;
   public static final int RETCODE_SKIP = 2;
@@ -116,7 +119,7 @@ public class Hump extends Configured implements Tool {
       for (int i = 0; i < sources.length; ++i)
         sources[i] = new File(argv[i]);
     } else {
-      sources = new File[]{new File("hump-tasks.json")};
+      sources = new File[]{new File(conf.get(CONF_HUMP_PATH_TASKFILE, "hump-tasks.json"))};
     }
 
     feeder = new HumpFeeder();
@@ -159,7 +162,9 @@ public class Hump extends Configured implements Tool {
     Configuration conf = getConf();
 
     FileSystem fs = FileSystem.get(conf);
-    FileStatus[] fileStatuses = fs.listStatus(new Path("/is/app/hump/lib"));
+
+
+    FileStatus[] fileStatuses = fs.listStatus(new Path(conf.get(CONF_HUMP_PATH_JAR, "/is/app/hump/lib")));
 
     for (FileStatus fileStatus : fileStatuses) {
       if (fileStatus.getPath().toString().endsWith(".jar")) {
@@ -170,7 +175,7 @@ public class Hump extends Configured implements Tool {
 
     Job job = new Job(conf);
 
-    job.setJobName("Hump-Sample");
+    job.setJobName("Hump-" + Long.toString(System.currentTimeMillis()));
     job.setJarByClass(HumpMapper.class);
     job.setMapperClass(HumpMapper.class);
 
