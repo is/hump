@@ -154,7 +154,7 @@ public class HumpCollector implements Runnable {
           totalBytes += bytes;
           // totalDuring += during;
 
-          String msg = String.format("%d/%d {%s} rows:%,d, inbytes:%,d, during:%.3fs --  %.1fT/s",
+          String msg = String.format("%d/%d {%s} rows:%,d, inbytes:%,d, during:%.3fs (%.1f)",
             taskCounter, feederTasks, id, rows, bytes, during * 0.001f, tableSpeed);
           log.info(msg);
           LogFileUtils.writelnWithTS(summaryLog, msg);
