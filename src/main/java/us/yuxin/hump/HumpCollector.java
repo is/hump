@@ -32,6 +32,7 @@ public class HumpCollector implements Runnable {
 
   FileWriter fullLog, summaryLog, failureLog;
 
+
   public void setup(Configuration conf, BlockingQueue<String> feedbackQueue) {
     this.conf = conf;
     this.feedbackQueue = feedbackQueue;
@@ -53,8 +54,11 @@ public class HumpCollector implements Runnable {
     long totalBytes = 0;
     // long totalDuring = 0;
     long totalRows = 0;
-
     long beginTS = System.currentTimeMillis();
+
+    long curSecond = 0;
+    long secondTables = 0;
+    long secondCounter = 0;
 
     while (true) {
       String res;
@@ -89,6 +93,16 @@ public class HumpCollector implements Runnable {
         String id = root.get("id").getTextValue();
         int retCode = root.get("code").getIntValue();
 
+        if (retCode != Hump.RETCODE_ERROR) {
+          long lastSecond = System.currentTimeMillis() / 1000;
+          if (lastSecond != curSecond) {
+            curSecond = lastSecond;
+            secondTables = secondCounter;
+            secondCounter = 0;
+          }
+          secondCounter += 1;
+        }
+
         if (retCode == Hump.RETCODE_SKIP) {
           successCounter += 1;
 
@@ -107,8 +121,8 @@ public class HumpCollector implements Runnable {
           totalBytes += bytes;
           // totalDuring += during;
 
-          String msg = String.format("%d/%d {%s} rows:%,d, inbytes:%,d, during:%.3fs",
-            taskCounter, feederTasks, id, rows, bytes, during * 0.001f);
+          String msg = String.format("%d/%d {%s} rows:%,d, inbytes:%,d, during:%.3fs -- %d tbls/s",
+            taskCounter, feederTasks, id, rows, bytes, during * 0.001f, secondTables);
           log.info(msg);
           LogFileUtils.writelnWithTS(summaryLog, msg);
         } else { // RETCODE_ERROR
