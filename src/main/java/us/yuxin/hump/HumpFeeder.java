@@ -1,6 +1,8 @@
 package us.yuxin.hump;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -20,8 +22,8 @@ public class HumpFeeder implements Runnable {
   List<String> tasks;
 
   public void setup(Configuration conf, File[] sources,
-    BlockingQueue<String> taskQueue,
-    BlockingQueue<String> feedbackQueue, int parallel) {
+                    BlockingQueue<String> taskQueue,
+                    BlockingQueue<String> feedbackQueue, int parallel) {
     this.conf = conf;
 
     this.taskQueue = taskQueue;
@@ -31,15 +33,29 @@ public class HumpFeeder implements Runnable {
     setupSources(sources);
   }
 
+
   private void setupSources(File[] sources) {
     ObjectMapper mapper = new ObjectMapper();
     tasks = new LinkedList<String>();
 
     for (File source : sources) {
       try {
-        JsonNode root = mapper.readValue(source, JsonNode.class);
-        for (JsonNode node : root) {
-          tasks.add(mapper.writeValueAsString(node));
+        if (source.toString().endsWith(".ajs")) {
+          BufferedReader br = new BufferedReader(new FileReader(source));
+          while (true) {
+            String line = br.readLine();
+            if (line == null)
+              break;
+            line = line.trim();
+            System.out.println(line);
+            tasks.add(line);
+          }
+          br.close();
+        } else {
+          JsonNode root = mapper.readValue(source, JsonNode.class);
+          for (JsonNode node : root) {
+            tasks.add(mapper.writeValueAsString(node));
+          }
         }
       } catch (IOException e) {
         e.printStackTrace();
