@@ -259,7 +259,8 @@ public class HumpDumpExecutor implements HumpExecutor {
       feed.put("rows", singleCounter.rows);
       feed.put("cells", singleCounter.cells);
       feed.put("nullCells", singleCounter.nullCells);
-      feed.put("cellBytes", singleCounter.bytes);
+      feed.put("cellBytes", singleCounter.inBytes);
+      feed.put("fileBytes", singleCounter.outBytes);
 
       feed.put("during", singleCounter.during);
       feed.put("columns", metadata.columnNames);

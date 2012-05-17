@@ -2,14 +2,16 @@ package us.yuxin.hump;
 
 public class StoreCounter {
   public long rows;
-  public long bytes;
+  public long inBytes;
+  public long outBytes;
   public long nullCells;
   public long cells;
   public long during;
 
   public void plus(StoreCounter c) {
     rows += c.rows;
-    bytes += c.bytes;
+    inBytes += c.inBytes;
+    outBytes += c.outBytes;
     nullCells += c.nullCells;
     cells += c.cells;
     during += c.during;
@@ -17,7 +19,8 @@ public class StoreCounter {
 
   public void reset() {
     rows = 0;
-    bytes = 0;
+    inBytes = 0;
+    outBytes = 0;
     nullCells = 0;
     cells = 0;
     during = 0;

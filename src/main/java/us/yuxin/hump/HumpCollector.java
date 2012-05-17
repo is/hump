@@ -82,7 +82,8 @@ public class HumpCollector implements Runnable {
     openLogFiles();
     ObjectMapper om  = new ObjectMapper();
 
-    long totalBytes = 0;
+    long totalInBytes = 0;
+    long totalOutBytes = 0;
     // long totalDuring = 0;
     long totalRows = 0;
     long beginTS = System.currentTimeMillis();
@@ -147,15 +148,17 @@ public class HumpCollector implements Runnable {
           successCounter += 1;
 
           long rows = root.get("rows").getLongValue();
-          long bytes = root.get("cellBytes").getLongValue();
+          long inBytes = root.get("cellBytes").getLongValue();
           long during = root.get("during").getLongValue();
+          long outBytes = root.get("fileBytes").getLongValue();
 
           totalRows += rows;
-          totalBytes += bytes;
+          totalInBytes += inBytes;
+          totalOutBytes += outBytes;
           // totalDuring += during;
 
-          String msg = String.format("%d/%d {%s} rows:%,d, inbytes:%,d, during:%.3fs [%.1f]",
-            taskCounter, feederTasks, id, rows, bytes, during * 0.001f, tableSpeed);
+          String msg = String.format("%d/%d {%s} rows:%,d, inbytes:%,d, outbytes:%,d, during:%.3fs [%.1f]",
+            taskCounter, feederTasks, id, rows, inBytes, outBytes, during * 0.001f, tableSpeed);
           log.info(msg);
           LogFileUtils.writelnWithTS(summaryLog, msg);
         } else { // RETCODE_ERROR
@@ -173,9 +176,10 @@ public class HumpCollector implements Runnable {
       }
     }
 
-    log.info(String.format("-- Statistic -- use %.2fs, %d tables (%d failed/%.3f%%), total row:%,d inbytes:%,d",
+    log.info(
+      String.format("-- Statistic -- use %.2fs, %d tables (%d failed/%.3f%%), total row:%,d inbytes:%,d, outbytes:%,d",
       (System.currentTimeMillis() - beginTS) * 0.001f, taskCounter, failureCounter,
-      failureCounter * 100f / taskCounter, totalRows, totalBytes));
+      failureCounter * 100f / taskCounter, totalRows, totalInBytes, totalOutBytes));
 
     closeLogFiles();
   }
