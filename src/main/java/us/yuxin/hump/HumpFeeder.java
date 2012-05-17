@@ -46,9 +46,7 @@ public class HumpFeeder implements Runnable {
             String line = br.readLine();
             if (line == null)
               break;
-            line = line.trim();
-            System.out.println(line);
-            tasks.add(line);
+            tasks.add(line.trim());
           }
           br.close();
         } else {
