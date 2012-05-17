@@ -93,8 +93,8 @@ public class RCFileStore implements Store {
       throw new IOException("Failed to fetch data from JDBC source", e);
     }
 
-    counter.outBytes = writer.getLength();
     writer.close();
+    counter.outBytes = writer.getLength();
   }
 
 
