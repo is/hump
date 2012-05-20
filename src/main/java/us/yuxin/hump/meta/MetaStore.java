@@ -6,9 +6,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.LinkedList;
 
+import com.google.common.collect.Iterables;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import us.yuxin.hump.meta.dao.PieceDao;
@@ -142,5 +146,19 @@ public class MetaStore {
     BufferedReader br = new BufferedReader(new FileReader(filename));
     importSummaryLog(br);
     br.close();
+  }
+
+  public String[] getDistinctValue(String column) throws SQLException {
+    String query = String.format("SELECT %s FROM PIECE GROUP BY %s ORDER BY %s;", column, column, column);
+    Statement stmt = co.createStatement();
+    ResultSet rs = stmt.executeQuery(query);
+    LinkedList<String> res = new LinkedList<String>();
+    while(rs.next()) {
+      res.add(rs.getString(1));
+    }
+    rs.close();
+    stmt.close();
+
+    return Iterables.toArray(res, String.class);
   }
 }

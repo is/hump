@@ -18,10 +18,11 @@ public class Meta {
   final static String O_INIT = "init";
   final static String O_IMPORT = "import";
   final static String O_STORE = "store";
+  final static String O_LIST = "list";
 
   final static String DEFAULT_STORE_PATH = "conf/meta/";
 
-  
+
   public static void main(String argv[]) throws Exception {
     Meta app = new Meta();
     app.run(argv);
@@ -41,12 +42,46 @@ public class Meta {
 
     if (cmdline.hasOption(O_INIT)) {
       initMateStore();
-    } else if(cmdline.hasOption(O_IMPORT)) {
+    } else if (cmdline.hasOption(O_IMPORT)) {
       importMateStore();
+    } else if (cmdline.hasOption(O_LIST)) {
+      listPieces();
     }
-
   }
 
+
+
+  private static void listPieces(MetaStore store, String column, String title) throws SQLException {
+    String values[] = store.getDistinctValue(column);
+
+    System.out.format("-- %s -- (%s)\n", title, column);
+
+    String oline = "   ";
+    for (int i = 0; i < values.length; ++i) {
+      oline += values[i];
+
+      if (i != values.length - 1) {
+        oline += " ";
+      }
+      if (oline.length() >= 70) {
+        System.out.println(oline);
+        oline = "   ";
+      }
+    }
+
+    if (oline.length() > 3)
+      System.out.println(oline);
+    System.out.println();
+  }
+
+
+  private void listPieces() throws SQLException, ClassNotFoundException {
+    MetaStore store = getMetaStore();
+    listPieces(store, "name", "name");
+    listPieces(store, "label1", "origin");
+    listPieces(store, "label2", "date");
+    store.close();
+  }
 
 
   private void importMateStore() throws ClassNotFoundException, SQLException, IOException {
@@ -76,18 +111,23 @@ public class Meta {
     addOption("I", O_INIT, false, "JDBC Driver classname");
     addOption("i", O_IMPORT, false, "Import log file");
     addOption("S", O_STORE, true, "Metastore path", "meta");
+    addOption("l", O_LIST, "List pieces");
   }
 
 
   private void addOption(String shortOpt, String longOpt, boolean hasArg, String description, String argName) {
-    Option o = new Option(shortOpt,longOpt, hasArg, description);
+    Option o = new Option(shortOpt, longOpt, hasArg, description);
     o.setArgName(argName);
     options.addOption(o);
   }
 
 
+  private void addOption(String shortOpt, String longOpt, String description) {
+    addOption(shortOpt, longOpt, false, description);
+  }
+
   private void addOption(String shortOpt, String longOpt, boolean hasArg, String description) {
-    Option o = new Option(shortOpt,longOpt, hasArg, description);
+    Option o = new Option(shortOpt, longOpt, hasArg, description);
     options.addOption(o);
   }
 
