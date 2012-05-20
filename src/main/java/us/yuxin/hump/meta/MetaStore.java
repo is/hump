@@ -59,6 +59,7 @@ public class MetaStore {
       "label3 VARCHAR(40),\n" +
       "tags VARCHAR(250),\n" +
       "state VARCHAR(40),\n" +
+      "target VARCHAR(250),\n" +
       "rows BIGINT,\n" +
       "size BIGINT,\n" +
       "columns CLOB,\n" +

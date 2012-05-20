@@ -17,6 +17,7 @@ public class PieceDao {
   public String label3;
   public String tags;
   public String state;
+  public String target;
   public int rows;
   public long size;
   public String columns;
@@ -29,7 +30,7 @@ public class PieceDao {
 
     String updateQuery = "UPDATE piece SET name=?, schema=?, category=?, " +
       "label1=?, label2=?, label3=?, tags=?, state=?, " +
-      "rows=?, size=?, columns=?, hivetypes=?, " +
+      "target=?, rows=?, size=?, columns=?, hivetypes=?, " +
       "sqltypes=?, lastUpdate=? WHERE id = ?";
 
     PreparedStatement stmt = co.prepareStatement(updateQuery);
@@ -44,8 +45,8 @@ public class PieceDao {
     stmt.close();
 
     String insertQuery = "INSERT INTO piece (name, schema, category, label1, label2, label3, " +
-      "tags, state, rows, size, columns, hivetypes, sqltypes, created, lastUpdate, id) " +
-      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      "tags, state, target, rows, size, columns, hivetypes, sqltypes, created, lastUpdate, id) " +
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     stmt = co.prepareStatement(insertQuery);
     setParameters(stmt, false);
@@ -68,6 +69,7 @@ public class PieceDao {
 
     ps.setString(++o, tags);
     ps.setString(++o, state);
+    ps.setString(++o, target);
 
     ps.setInt(++o, rows);
     ps.setLong(++o, size);
@@ -94,6 +96,7 @@ public class PieceDao {
     label3 = rs.getString(++o);
     tags = rs.getString(++o);
     state = rs.getString(++o);
+    target = rs.getString(++o);
     rows = rs.getInt(++o);
     size = rs.getLong(++o);
     columns = rs.getString(++o);
@@ -106,7 +109,7 @@ public class PieceDao {
 
   public boolean load(Connection co, String id) throws SQLException {
     String query = "SELECT name, schema, category, " +
-      "label1, label2, label3, tags, state, " +
+      "label1, label2, label3, tags, state, target, " +
       "rows, size, columns, hivetypes, sqltypes, " +
       "created, lastUpdate FROM piece WHERE id = '" + id + "'";
 
