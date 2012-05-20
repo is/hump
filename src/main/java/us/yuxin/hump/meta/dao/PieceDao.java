@@ -14,6 +14,7 @@ public class PieceDao {
   public String label2;
   public String label3;
   public String tags;
+  public String state;
   public int rows;
   public long size;
   public String columns;
@@ -22,15 +23,19 @@ public class PieceDao {
   public Timestamp created;
   public Timestamp lastUpdate;
 
+
   public void setParameters(PreparedStatement ps, boolean update) throws SQLException {
     int o = 0;
     ps.setString(++o, name);
     ps.setString(++o, schema);
     ps.setString(++o, category);
+
     ps.setString(++o, label1);
     ps.setString(++o, label2);
     ps.setString(++o, label3);
+
     ps.setString(++o, tags);
+    ps.setString(++o, state);
 
     ps.setInt(++o, rows);
     ps.setLong(++o, size);
@@ -46,6 +51,7 @@ public class PieceDao {
     ps.setString(++o, id);
   }
 
+
   public void getParameters(ResultSet rs) throws SQLException {
     int o = 0;
     name = rs.getString(++o);
@@ -55,6 +61,7 @@ public class PieceDao {
     label2 = rs.getString(++o);
     label3 = rs.getString(++o);
     tags = rs.getString(++o);
+    state = rs.getString(++o);
     rows = rs.getInt(++o);
     size = rs.getLong(++o);
     columns = rs.getString(++o);

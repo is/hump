@@ -58,6 +58,7 @@ public class MetaStore {
       "label2 VARCHAR(40), -- date/other things\n" +
       "label3 VARCHAR(40),\n" +
       "tags VARCHAR(250),\n" +
+      "state VARCHAR(40),\n" +
       "rows BIGINT,\n" +
       "size BIGINT,\n" +
       "columns CLOB,\n" +
@@ -89,7 +90,7 @@ public class MetaStore {
 
   public boolean load(PieceDao piece, String id) throws SQLException {
     String query = "SELECT name, schema, category, " +
-      "label1, label2, label3, tags," +
+      "label1, label2, label3, tags, state, " +
       "rows, size, columns, hivetypes, sqltypes, " +
       "created, lastUpdate FROM piece WHERE id = '" + id + "'";
 
@@ -113,7 +114,7 @@ public class MetaStore {
   public boolean save(PieceDao piece) throws SQLException {
 
     String updateQuery = "UPDATE piece SET name=?, schema=?, category=?, " +
-      "label1=?, label2=?, label3=?, tags=?, " +
+      "label1=?, label2=?, label3=?, tags=?, state=?, " +
       "rows=?, size=?, columns=?, hivetypes=?, " +
       "sqltypes=?, lastUpdate=? WHERE id = ?";
 
@@ -129,8 +130,8 @@ public class MetaStore {
     stmt.close();
 
     String insertQuery = "INSERT INTO piece (name, schema, category, label1, label2, label3, " +
-      "tags, rows, size, columns, hivetypes, sqltypes, created, lastUpdate, id) " +
-      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      "tags, state, rows, size, columns, hivetypes, sqltypes, created, lastUpdate, id) " +
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     stmt = co.prepareStatement(insertQuery);
     piece.setParameters(stmt, false);
