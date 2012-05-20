@@ -18,7 +18,7 @@ public class Meta {
   final static String O_INIT = "init";
   final static String O_IMPORT = "import";
   final static String O_STORE = "store";
-  final static String O_LIST = "list";
+  final static String O_COUNT = "count";
 
   final static String DEFAULT_STORE_PATH = "conf/meta/";
 
@@ -44,15 +44,15 @@ public class Meta {
       initMateStore();
     } else if (cmdline.hasOption(O_IMPORT)) {
       importMateStore();
-    } else if (cmdline.hasOption(O_LIST)) {
-      listPieces();
+    } else if (cmdline.hasOption(O_COUNT)) {
+      countPieces();
     }
   }
 
 
 
-  private static void listPieces(MetaStore store, String column, String title) throws SQLException {
-    String values[] = store.getDistinctValue(column);
+  private static void countPieces(MetaStore store, String column, String title) throws SQLException {
+    String values[] = store.getPiecesCount(column);
 
     System.out.format("-- %s -- (%s)\n", title, column);
 
@@ -75,11 +75,11 @@ public class Meta {
   }
 
 
-  private void listPieces() throws SQLException, ClassNotFoundException {
+  private void countPieces() throws SQLException, ClassNotFoundException {
     MetaStore store = getMetaStore();
-    listPieces(store, "name", "name");
-    listPieces(store, "label1", "origin");
-    listPieces(store, "label2", "date");
+    countPieces(store, "name", "name");
+    countPieces(store, "label1", "origin");
+    countPieces(store, "label2", "date");
     store.close();
   }
 
@@ -111,7 +111,7 @@ public class Meta {
     addOption("I", O_INIT, false, "JDBC Driver classname");
     addOption("i", O_IMPORT, false, "Import log file");
     addOption("S", O_STORE, true, "Metastore path", "meta");
-    addOption("l", O_LIST, "List pieces");
+    addOption("C", O_COUNT, "List pieces count");
   }
 
 

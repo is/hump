@@ -148,13 +148,13 @@ public class MetaStore {
     br.close();
   }
 
-  public String[] getDistinctValue(String column) throws SQLException {
-    String query = String.format("SELECT %s FROM PIECE GROUP BY %s ORDER BY %s;", column, column, column);
+  public String[] getPiecesCount(String column) throws SQLException {
+    String query = String.format("SELECT %s, count(1) FROM PIECE GROUP BY %s ORDER BY %s;", column, column, column);
     Statement stmt = co.createStatement();
     ResultSet rs = stmt.executeQuery(query);
     LinkedList<String> res = new LinkedList<String>();
     while(rs.next()) {
-      res.add(rs.getString(1));
+      res.add(rs.getString(1) + "(" + rs.getInt(2) + ")");
     }
     rs.close();
     stmt.close();
