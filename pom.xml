@@ -28,7 +28,6 @@
   </repositories>
 
   <dependencies>
-
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
@@ -72,6 +71,10 @@
           <artifactId>hive-common</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>org.apache.hive</groupId>
+          <artifactId>hive-metastore</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-core</artifactId>
         </exclusion>
@@ -104,16 +107,6 @@
       <scope>runtime</scope>
     </dependency>
 
-
-    <!--
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <version>1.3.165</version>
-      <scope>runtime</scope>
-    </dependency>
-    -->
-
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -121,18 +114,17 @@
       <scope>test</scope>
     </dependency>
 
-    <!--
-    <dependency>
-      <groupId>org.dbunit</groupId>
-      <artifactId>dbunit</artifactId>
-      <version>2.4.8</version>
-      <scope>test</scope>
-    </dependency>
-    -->
     <dependency>
       <groupId>org.hsqldb</groupId>
       <artifactId>sqltool</artifactId>
       <version>2.2.8</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.3</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
