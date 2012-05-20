@@ -18,6 +18,11 @@ public class MetaStore {
   Connection co;
 
 
+  public Connection getConnection() {
+    return co;
+  }
+
+
   public MetaStore() {
   }
 
