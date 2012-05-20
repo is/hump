@@ -87,58 +87,11 @@ public class MetaStore {
     }
   }
 
-
-  public boolean load(PieceDao piece, String id) throws SQLException {
-    String query = "SELECT name, schema, category, " +
-      "label1, label2, label3, tags, state, " +
-      "rows, size, columns, hivetypes, sqltypes, " +
-      "created, lastUpdate FROM piece WHERE id = '" + id + "'";
-
-    Statement stmt = co.createStatement();
-
-    stmt.execute(query);
-    ResultSet rs = stmt.getResultSet();
-    if (!rs.next()) {
-      rs.close();
-      stmt.close();
-      return false;
-    }
-
-    piece.getParameters(rs);
-    piece.id = id;
-    rs.close();
-    stmt.close();
-    return true;
+  public boolean savePiece(PieceDao piece) throws SQLException {
+    return piece.save(co);
   }
 
-  public boolean save(PieceDao piece) throws SQLException {
-
-    String updateQuery = "UPDATE piece SET name=?, schema=?, category=?, " +
-      "label1=?, label2=?, label3=?, tags=?, state=?, " +
-      "rows=?, size=?, columns=?, hivetypes=?, " +
-      "sqltypes=?, lastUpdate=? WHERE id = ?";
-
-    PreparedStatement stmt = co.prepareStatement(updateQuery);
-    piece.setParameters(stmt, true);
-    stmt.execute();
-
-    if (stmt.getUpdateCount() != 0) {
-      stmt.close();
-      co.commit();
-      return false;
-    }
-    stmt.close();
-
-    String insertQuery = "INSERT INTO piece (name, schema, category, label1, label2, label3, " +
-      "tags, state, rows, size, columns, hivetypes, sqltypes, created, lastUpdate, id) " +
-      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-    stmt = co.prepareStatement(insertQuery);
-    piece.setParameters(stmt, false);
-    stmt.execute();
-    stmt.close();
-    co.commit();
-
-    return true;
+  public boolean loadPiece(PieceDao piece, String id) throws SQLException {
+    return piece.load(co, id);
   }
 }

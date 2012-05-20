@@ -1,8 +1,10 @@
 package us.yuxin.hump.meta.dao;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 
 public class PieceDao {
@@ -23,8 +25,38 @@ public class PieceDao {
   public Timestamp created;
   public Timestamp lastUpdate;
 
+  public boolean save(Connection co) throws SQLException {
 
-  public void setParameters(PreparedStatement ps, boolean update) throws SQLException {
+    String updateQuery = "UPDATE piece SET name=?, schema=?, category=?, " +
+      "label1=?, label2=?, label3=?, tags=?, state=?, " +
+      "rows=?, size=?, columns=?, hivetypes=?, " +
+      "sqltypes=?, lastUpdate=? WHERE id = ?";
+
+    PreparedStatement stmt = co.prepareStatement(updateQuery);
+    setParameters(stmt, true);
+    stmt.execute();
+
+    if (stmt.getUpdateCount() != 0) {
+      stmt.close();
+      co.commit();
+      return false;
+    }
+    stmt.close();
+
+    String insertQuery = "INSERT INTO piece (name, schema, category, label1, label2, label3, " +
+      "tags, state, rows, size, columns, hivetypes, sqltypes, created, lastUpdate, id) " +
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    stmt = co.prepareStatement(insertQuery);
+    setParameters(stmt, false);
+    stmt.execute();
+    stmt.close();
+    co.commit();
+    return true;
+  }
+
+
+  private void setParameters(PreparedStatement ps, boolean update) throws SQLException {
     int o = 0;
     ps.setString(++o, name);
     ps.setString(++o, schema);
@@ -52,7 +84,7 @@ public class PieceDao {
   }
 
 
-  public void getParameters(ResultSet rs) throws SQLException {
+  private void loadFromResultSet(ResultSet rs) throws SQLException {
     int o = 0;
     name = rs.getString(++o);
     schema = rs.getString(++o);
@@ -69,5 +101,29 @@ public class PieceDao {
     sqltypes = rs.getString(++o);
     created = rs.getTimestamp(++o);
     lastUpdate = rs.getTimestamp(++o);
+  }
+
+
+  public boolean load(Connection co, String id) throws SQLException {
+    String query = "SELECT name, schema, category, " +
+      "label1, label2, label3, tags, state, " +
+      "rows, size, columns, hivetypes, sqltypes, " +
+      "created, lastUpdate FROM piece WHERE id = '" + id + "'";
+
+    Statement stmt = co.createStatement();
+
+    stmt.execute(query);
+    ResultSet rs = stmt.getResultSet();
+    if (!rs.next()) {
+      rs.close();
+      stmt.close();
+      return false;
+    }
+
+    loadFromResultSet(rs);
+    this.id = id;
+    rs.close();
+    stmt.close();
+    return true;
   }
 }

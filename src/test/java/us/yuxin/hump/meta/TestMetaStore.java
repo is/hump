@@ -36,13 +36,13 @@ public class TestMetaStore {
     piece.label1 = "x1";
     piece.label2 = "20110305";
 
-    Assert.assertTrue(store.save(piece));
+    Assert.assertTrue(store.savePiece(piece));
     piece.label2 = "20110306";
-    Assert.assertFalse(store.save(piece));
+    Assert.assertFalse(store.savePiece(piece));
 
     piece = new PieceDao();
-    Assert.assertFalse(store.load(piece, "test1"));
-    Assert.assertTrue(store.load(piece, "test0"));
+    Assert.assertFalse(store.loadPiece(piece, "test1"));
+    Assert.assertTrue(store.loadPiece(piece, "test0"));
     Assert.assertEquals("20110306", piece.label2);
 
     store.close();
