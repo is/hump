@@ -1,13 +1,16 @@
 package us.yuxin.hump.meta;
 
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 import us.yuxin.hump.meta.dao.PieceDao;
 
 public class MetaStore {
@@ -47,7 +50,10 @@ public class MetaStore {
   public static void createSchemaForHsqldb(Connection co) throws SQLException {
     Statement stmt = co.createStatement();
 
-    stmt.execute("SET FILES SCRIPT FORMAT COMPRESSED;");
+    // stmt.execute("SET FILES SCRIPT FORMAT COMPRESSED;");
+    stmt.execute("SET DATABASE DEFAULT TABLE TYPE CACHED;");
+    stmt.execute("SET FILES LOG FALSE;");
+    stmt.execute("SET FILES WRITE DELAY 30");
 
     stmt.addBatch("CREATE TABLE piece (\n" +
       "id VARCHAR(250), -- table id\n" +
@@ -62,9 +68,9 @@ public class MetaStore {
       "target VARCHAR(250),\n" +
       "rows BIGINT,\n" +
       "size BIGINT,\n" +
-      "columns CLOB,\n" +
-      "hivetypes CLOB,\n" +
-      "sqltypes CLOB,\n" +
+      "columns VARCHAR(1024),\n" +
+      "hivetypes VARCHAR(1024),\n" +
+      "sqltypes VARCHAR(1024),\n" +
       "created TIMESTAMP,\n" +
       "lastUpdate TIMESTAMP,\n" +
       "PRIMARY KEY(id)\n" +
@@ -88,11 +94,48 @@ public class MetaStore {
     }
   }
 
+
   public boolean savePiece(PieceDao piece) throws SQLException {
+    boolean ret = piece.save(co);
+    co.commit();
+    return ret;
+  }
+
+
+  public boolean savePieceWithoutCommit(PieceDao piece) throws SQLException {
     return piece.save(co);
   }
 
+
   public boolean loadPiece(PieceDao piece, String id) throws SQLException {
     return piece.load(co, id);
+  }
+
+
+  public void importSummaryLog(BufferedReader br) throws IOException, SQLException {
+    ObjectMapper mapper = new ObjectMapper();
+
+    while (true) {
+      String line = br.readLine();
+      if (line == null)
+        break;
+
+      JsonNode node = mapper.readValue(line.trim(), JsonNode.class);
+      PieceDao piece = new PieceDao();
+      if (node.get("id") == null)
+        continue;
+      piece.loadFromJson(node);
+      if (!piece.state.equals("SKIP")) {
+        savePieceWithoutCommit(piece);
+      }
+    }
+    co.commit();
+  }
+
+
+  public void importSummaryLog(String filename) throws IOException, SQLException {
+    BufferedReader br = new BufferedReader(new FileReader(filename));
+    importSummaryLog(br);
+    br.close();
   }
 }

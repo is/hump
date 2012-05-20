@@ -7,6 +7,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
+import org.codehaus.jackson.JsonNode;
+
 public class PieceDao {
   public String id;
   public String name;
@@ -39,7 +43,6 @@ public class PieceDao {
 
     if (stmt.getUpdateCount() != 0) {
       stmt.close();
-      co.commit();
       return false;
     }
     stmt.close();
@@ -52,7 +55,6 @@ public class PieceDao {
     setParameters(stmt, false);
     stmt.execute();
     stmt.close();
-    co.commit();
     return true;
   }
 
@@ -128,5 +130,30 @@ public class PieceDao {
     rs.close();
     stmt.close();
     return true;
+  }
+
+
+  public void loadFromJson(JsonNode node) {
+    id = node.get("id").getTextValue();
+    String tokens[] = Iterables.toArray(Splitter.on('.').split(id), String.class);
+    schema = "log";
+
+    category = tokens[0];
+    name = tokens[1];
+    label1 = tokens[2];
+    label2 = tokens[3];
+
+    state = node.get("status").getTextValue();
+    target = node.get("target").getTextValue();
+
+    if (state.equals("OK")) {
+      rows = node.get("rows").getIntValue();
+      size = node.get("fileBytes").getLongValue();
+      columns = node.get("columns").getTextValue();
+      hivetypes = node.get("columnTypes").getTextValue();
+
+      created = new Timestamp(System.currentTimeMillis());
+      lastUpdate = new Timestamp(System.currentTimeMillis());
+    }
   }
 }
