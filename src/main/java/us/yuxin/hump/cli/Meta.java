@@ -54,7 +54,7 @@ public class Meta {
   private static void pieceStatistic(MetaStore store, String column, String title) throws SQLException {
     String values[] = store.getPieceStatisticByColumn(column);
 
-    System.out.format("-- %s -- (%s)\n", title, column);
+    System.out.format("-- %s:%s -- \n", title.toUpperCase(), column);
 
     String oline = "   ";
     for (int i = 0; i < values.length; ++i) {
