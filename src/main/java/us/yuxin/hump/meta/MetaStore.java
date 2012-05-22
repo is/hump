@@ -60,9 +60,9 @@ public class MetaStore {
     Statement stmt = co.createStatement();
 
     // stmt.execute("SET FILES SCRIPT FORMAT COMPRESSED;");
-    stmt.execute("SET DATABASE DEFAULT TABLE TYPE CACHED;");
-    stmt.execute("SET FILES LOG FALSE;");
-    stmt.execute("SET FILES WRITE DELAY 30");
+    // stmt.execute("SET DATABASE DEFAULT TABLE TYPE CACHED;");
+    // stmt.execute("SET FILES LOG FALSE;");
+    // stmt.execute("SET FILES WRITE DELAY 30");
 
     stmt.addBatch("CREATE TABLE piece (\n" +
       "id VARCHAR(250), -- table id\n" +
@@ -100,6 +100,8 @@ public class MetaStore {
       Class.forName("com.mysql.jdbc.Driver");
     } else if (url.contains(":hsqldb:")) {
       Class.forName("org.hsqldb.jdbcDriver");
+    } else if (url.contains(":h2:")) {
+      Class.forName("org.h2.Driver");
     }
   }
 
@@ -155,10 +157,14 @@ public class MetaStore {
     Statement stmt = co.createStatement();
     for (String columnName: columns) {
       stmt.execute(String.format("DROP TABLE IF EXISTS stat_%s", columnName));
-      stmt.execute(String.format("CREATE TABLE stat_%s(key VARCHAR(80), c BIGINT);", columnName));
       stmt.execute(String.format(
-        "INSERT INTO stat_%s (SELECT %s as key, count(1) as c FROM piece GROUP BY %s)",
+        "CREATE TABLE stat_%s AS SELECT %s as key, count(1) as c FROM piece GROUP BY %s;",
         columnName, columnName, columnName));
+
+      // stmt.execute(String.format("CREATE TABLE stat_%s(key VARCHAR(80), c BIGINT);", columnName));
+      // stmt.execute(String.format(
+      // "INSERT INTO stat_%s (SELECT %s as key, count(1) as c FROM piece GROUP BY %s)",
+      //  columnName, columnName, columnName));
     }
     stmt.close();
   }

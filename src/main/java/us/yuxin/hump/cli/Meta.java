@@ -102,7 +102,7 @@ public class Meta {
     MetaStore store = new MetaStore();
 
     String dbPath = cmdline.getOptionValue(O_STORE, DEFAULT_STORE_PATH);
-    store.open("jdbc:hsqldb:file:" + dbPath + ";shutdown=true");
+    store.open("jdbc:h2:" + dbPath);
     return store;
   }
 
