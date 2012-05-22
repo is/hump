@@ -157,14 +157,14 @@ public class MetaStore {
       stmt.execute(String.format("DROP TABLE IF EXISTS stat_%s", columnName));
       stmt.execute(String.format("CREATE TABLE stat_%s(key VARCHAR(80), c BIGINT);", columnName));
       stmt.execute(String.format(
-        "INSERT INTO stat_%s (SELECT %s as key, count(1) as c FROM picec GROUP BY %s",
+        "INSERT INTO stat_%s (SELECT %s as key, count(1) as c FROM piece GROUP BY %s)",
         columnName, columnName, columnName));
     }
     stmt.close();
   }
 
   public String[] getPieceStatisticByColumn(String column) throws SQLException {
-    String query = String.format("SELECT %s, count(1) FROM PIECE GROUP BY %s ORDER BY %s;", column, column, column);
+    String query = String.format("SELECT key, c FROM stat_%s ORDER BY key;", column);
     Statement stmt = co.createStatement();
     ResultSet rs = stmt.executeQuery(query);
     LinkedList<String> res = new LinkedList<String>();
