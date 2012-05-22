@@ -9,7 +9,6 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 import com.google.common.collect.Iterables;
@@ -22,6 +21,7 @@ public class MetaStore {
   Connection co;
 
 
+  @SuppressWarnings("unused")
   public Connection getConnection() {
     return co;
   }
@@ -148,7 +148,22 @@ public class MetaStore {
     br.close();
   }
 
-  public String[] getPiecesCount(String column) throws SQLException {
+
+  public void updatePieceStatistic() throws SQLException {
+    String columns[] = new String[] {"name", "label1", "label2"};
+
+    Statement stmt = co.createStatement();
+    for (String columnName: columns) {
+      stmt.execute(String.format("DROP TABLE IF EXISTS stat_%s", columnName));
+      stmt.execute(String.format("CREATE TABLE stat_%s(key VARCHAR(80), c BIGINT);", columnName));
+      stmt.execute(String.format(
+        "INSERT INTO stat_%s (SELECT %s as key, count(1) as c FROM picec GROUP BY %s",
+        columnName, columnName, columnName));
+    }
+    stmt.close();
+  }
+
+  public String[] getPieceStatisticByColumn(String column) throws SQLException {
     String query = String.format("SELECT %s, count(1) FROM PIECE GROUP BY %s ORDER BY %s;", column, column, column);
     Statement stmt = co.createStatement();
     ResultSet rs = stmt.executeQuery(query);
