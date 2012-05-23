@@ -1,11 +1,14 @@
 package us.yuxin.hump.cli;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 
@@ -14,6 +17,8 @@ public class ConditionUtils {
   private static Pattern range0Pattern = Pattern.compile("(\\D)(\\d+?)-(\\d+?)"); // x1-23
   @SuppressWarnings("FieldCanBeLocal")
   private static String rangeColumnName = "label1";
+  @SuppressWarnings("FieldCanBeLocal")
+  private static String dateColumnName = "label2";
 
   /**
    * Handle range form like x3-12
@@ -70,6 +75,91 @@ public class ConditionUtils {
         sb.append(", ");
     }
     sb.append(")");
+    return sb.toString();
+  }
+
+
+  // form:
+  //  2012 one year
+  //  201203 one month
+  //  04 one month
+  //  0412 one day
+  //
+  //  20120301-20120321 full day range
+  //  201203-201210 month range
+  //  0304-0421 short day range
+  //  2010-2012 year range
+  //  03-11 short month range
+
+  public static String dateCondition(String in) {
+    List<String> conds = new LinkedList<String>();
+    String thisYear = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
+
+    for (String token: Splitter.on(",").trimResults().omitEmptyStrings().split(in)) {
+      String subcond = null;
+
+      if (token.indexOf('-') == -1) {
+        if (token.length() == 8) {
+          subcond = String.format("%s = '%s'", dateColumnName, token);
+        } else if (token.length() == 6) {
+          subcond = String.format(
+            "%s >= '%s00' AND %s <= '%s40'", dateColumnName, token, dateColumnName, token);
+        } else if (token.length() == 4) {
+          if (token.compareTo("1800") > 0)
+            subcond = String.format(
+              "%s >= '%s0000' AND %s <= '%s1240'", dateColumnName, token, dateColumnName, token);
+          else
+            subcond = String.format(
+              "%s = '%s%s'", dateColumnName, thisYear, token);
+        } else if (token.length() == 2) {
+           subcond = String.format(
+             "%s >= '%s%s00' AND %s <= '%s%s40'",
+             dateColumnName, thisYear, token, dateColumnName, thisYear, token);
+        }
+      } else {
+        int o = token.indexOf('-');
+        String tbegin = token.substring(0, o);
+        String tend = token.substring(o + 1);
+
+        if (tbegin.length() != tend.length())
+          continue;
+
+
+        if (tbegin.length() == 8) {
+          subcond = String.format("%s >= '%s' AND %s <= '%s'",
+            dateColumnName, tbegin, dateColumnName, tend);
+        } else if (tbegin.length() == 6) {
+          subcond = String.format(
+            "%s >= '%s00' AND %s <= '%s40'", dateColumnName, tbegin, dateColumnName, tend);
+        } else if (tbegin.length() == 4) {
+          if (tbegin.compareTo("1800") > 0)
+            subcond = String.format(
+              "%s >= '%s0000' AND %s <= '%s1240'", dateColumnName, tbegin, dateColumnName, tend);
+          else
+            subcond = String.format(
+              "%s >= '%s%s' AND %s <= '%s%s'",
+              dateColumnName, thisYear, tbegin,
+              dateColumnName, thisYear, tend);
+        } else if (tbegin.length() == 2) {
+          subcond = String.format(
+            "%s >= '%s%s00' AND %s <= '%s%s40'",
+            dateColumnName, thisYear, tbegin, dateColumnName, thisYear, tend);
+        }
+      }
+
+      if (subcond != null)
+        conds.add(subcond);
+    }
+
+    if (conds.size() == 0)
+      return "";
+    if (conds.size() == 1)
+      return "(" + conds.get(0) + ")";
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("((");
+    Joiner.on(") OR (").appendTo(sb, conds);
+    sb.append("))");
     return sb.toString();
   }
 }
