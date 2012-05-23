@@ -83,7 +83,7 @@ public class Gen {
       System.exit(0);
     }
 
-    parseCmdline(OptionsFileUtil.expandArguments(args));
+    parseCmdline(OptionsFileUtils.expandArguments(args));
 
     if (cmdline.hasOption(O_COLUMNS) && cmdline.hasOption(O_HIVE_TYPES)) {
       genByHiveColumnDescriptor();
