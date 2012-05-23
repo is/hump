@@ -8,8 +8,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OptionsFileUtil {
-  private OptionsFileUtil() {
+public class OptionsFileUtils {
+  private OptionsFileUtils() {
   }
 
   public static String[] expandArguments(String[] args) throws Exception {
