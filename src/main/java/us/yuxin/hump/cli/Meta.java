@@ -82,9 +82,18 @@ public class Meta {
 
     String rangeConditon = ConditionUtils.rangeCondition(cmdline.getOptionValue(O_RANGE, ""));
     String dateCondition = ConditionUtils.dateCondition(cmdline.getOptionValue(O_DATE, ""));
+    String name = cmdline.getOptionValue(O_NAME);
 
-    System.out.println(rangeConditon);
-    System.out.println(dateCondition);
+    StringBuilder sb = new StringBuilder();
+    sb.append("SELECT * FROM piece WHERE name = '").append(name).append("'");
+
+    if (rangeConditon.length() > 0)
+      sb.append(" AND ").append(rangeConditon);
+
+    if (dateCondition.length() > 0)
+      sb.append(" AND ").append(dateCondition);
+
+    System.out.println(sb.toString());
 
     return pieces;
   }
