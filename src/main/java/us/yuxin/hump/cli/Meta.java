@@ -20,6 +20,15 @@ public class Meta {
   final static String O_STORE = "store";
   final static String O_STATISTIC = "stat";
 
+  final static String O_GENERATE = "generate";
+  final static String O_CATEGORY = "category";
+  final static String O_TARGET = "target";
+  final static String O_NAME = "name";
+  final static String O_RANGE = "range";
+  final static String O_DATE = "date";
+  final static String O_SCHEMA = "schema";
+  final static String O_G1 = "g1";
+
   final static String DEFAULT_STORE_PATH = "conf/meta/";
 
 
@@ -113,6 +122,14 @@ public class Meta {
     addOption("i", O_IMPORT, false, "Import log file");
     addOption("S", O_STORE, true, "Metastore path", "meta");
     addOption("s", O_STATISTIC, "Pieces statistic");
+
+    addOption("g", O_GENERATE, "Generate hive table schema");
+    addOption(null, O_CATEGORY, true, "Specify category", "category");
+    addOption("n", O_NAME, true, "Table name", "table");
+    addOption("t", O_TARGET, true, "Target table name", "table");
+    addOption("r", O_RANGE,  true, "Piece range", "range");
+    addOption("d", O_DATE, true, "Date range", "date");
+    addOption(null, O_SCHEMA, true, "Specify schema", "schema");
   }
 
 
