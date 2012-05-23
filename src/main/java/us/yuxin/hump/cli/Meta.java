@@ -29,7 +29,7 @@ public class Meta {
   final static String O_SCHEMA = "schema";
   final static String O_G1 = "g1";
 
-  final static String DEFAULT_STORE_PATH = "conf/meta/";
+  final static String DEFAULT_STORE_PATH = "conf/.meta";
 
 
   public static void main(String argv[]) throws Exception {
