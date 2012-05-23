@@ -1,8 +1,9 @@
 package us.yuxin.hump.cli;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.sql.SQLException;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -93,14 +94,14 @@ public class Meta {
     if (dateCondition.length() > 0)
       sb.append(" AND ").append(dateCondition);
 
-    sb.append(" ORDER BY name, label2, lable1");
+    sb.append(" ORDER BY name, label2, label1");
     String query = sb.toString();
-    System.out.println("QUERY: " + query);
+    System.out.println("-- QUERY: " + query);
 
     pieces = store.getPieces(query);
     store.close();
 
-    System.out.println("PIECES:" + pieces.size());
+    System.out.println("-- PIECES:" + pieces.size());
     return pieces;
   }
 
@@ -108,7 +109,40 @@ public class Meta {
   private String generateHiveSchemaString() throws ClassNotFoundException, SQLException {
     // TODO
     pieces = buildPieceList();
-    return null;
+    PieceDao piece = pieces.get(pieces.size() - 1);
+
+    Gen gen = new Gen();
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    PrintStream ps = new PrintStream(baos);
+    String tablename = cmdline.getOptionValue(O_TARGET, cmdline.getOptionValue(O_NAME));
+    gen.setOutStream(ps);
+    String[] params = new String[] {
+      "gen", "-f", "id", "-e", "-P", "s:string,d:string",
+      "-C", piece.columns, "-H", piece.hivetypes,
+      "-t", tablename,
+    };
+
+    try {
+      gen.call(params);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
+
+
+//    ps.format("ALTER TABLE %s ADD \n", tablename);
+//    for (PieceDao p: pieces) {
+//      ps.format("PARTITION (s='%s', d='%s') location '%s' \n",
+//        p.label1, p.label2, p.target.replaceFirst("/rcfile", ""));
+//    }
+//    ps.println(";");
+
+    for (PieceDao p: pieces) {
+      ps.format("ALTER TABLE %s ADD IF NOT EXISTS\n PARTITION (s='%s', d='%s') location '%s'; \n",
+        tablename, p.label1, p.label2, p.target.replaceFirst("/rcfile", ""));
+    }
+
+    return baos.toString();
   }
 
 

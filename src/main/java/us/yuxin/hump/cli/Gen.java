@@ -124,7 +124,7 @@ public class Gen {
     source.close();
 
     buildTable();
-    System.exit(0);
+    // System.exit(0);
   }
 
 
@@ -143,7 +143,7 @@ public class Gen {
     }
 
     buildTable();
-    System.exit(0);
+    // System.exit(0);
   }
 
 
@@ -259,5 +259,13 @@ public class Gen {
     }
 
     out.println("STORED AS RCFile;");
+  }
+
+  void setOutStream(PrintStream out) {
+    this.out = out;
+  }
+
+  void call(String argv[]) throws Exception {
+    run(argv);
   }
 }
