@@ -31,6 +31,7 @@ public class Meta {
   final static String O_CONF = "conf";
 
   final static String DEFAULT_STORE_PATH = "conf/.meta";
+  final static String DEFAULT_DB_OPTIONS = ";LOG=0;CACHE_SIZE=65536;LOCK_MODE=0;UNDO_LOG=0";
 
 
 
@@ -113,7 +114,7 @@ public class Meta {
     MetaStore store = new MetaStore();
 
     String dbPath = cmdline.getOptionValue(O_STORE, DEFAULT_STORE_PATH);
-    store.open("jdbc:h2:" + dbPath);
+    store.open("jdbc:h2:" + dbPath + DEFAULT_DB_OPTIONS);
     return store;
   }
 
