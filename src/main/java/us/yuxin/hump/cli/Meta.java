@@ -78,7 +78,7 @@ public class Meta {
 
   private List<PieceDao> buildPieceList() throws ClassNotFoundException, SQLException {
     MetaStore store = getMetaStore();
-    List<PieceDao> pieces = new LinkedList<PieceDao>();
+    List<PieceDao> pieces;
 
     String rangeConditon = ConditionUtils.rangeCondition(cmdline.getOptionValue(O_RANGE, ""));
     String dateCondition = ConditionUtils.dateCondition(cmdline.getOptionValue(O_DATE, ""));
@@ -93,8 +93,14 @@ public class Meta {
     if (dateCondition.length() > 0)
       sb.append(" AND ").append(dateCondition);
 
-    System.out.println(sb.toString());
+    sb.append(" ORDER BY name, label2, lable1");
+    String query = sb.toString();
+    System.out.println("QUERY: " + query);
 
+    pieces = store.getPieces(query);
+    store.close();
+
+    System.out.println("PIECES:" + pieces.size());
     return pieces;
   }
 

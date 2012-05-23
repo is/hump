@@ -88,8 +88,9 @@ public class PieceDao {
   }
 
 
-  private void loadFromResultSet(ResultSet rs) throws SQLException {
+  public void loadFromResultSet(ResultSet rs) throws SQLException {
     int o = 0;
+    id = rs.getString(++o);
     name = rs.getString(++o);
     schema = rs.getString(++o);
     category = rs.getString(++o);
@@ -109,12 +110,17 @@ public class PieceDao {
   }
 
 
+
+
   public boolean load(Connection co, String id) throws SQLException {
-    String query = "SELECT name, schema, category, " +
+    /*
+    String query = "SELECT id, name, schema, category, " +
       "label1, label2, label3, tags, state, target, " +
       "rows, size, columns, hivetypes, sqltypes, " +
       "created, lastUpdate FROM piece WHERE id = '" + id + "'";
+    */
 
+    String query = "SELECT * FROM piece WHERE id = '" + id + "'";
     Statement stmt = co.createStatement();
 
     stmt.execute(query);

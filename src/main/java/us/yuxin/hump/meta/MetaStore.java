@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
+import java.util.List;
 
 import com.google.common.collect.Iterables;
 import org.codehaus.jackson.JsonNode;
@@ -181,5 +182,20 @@ public class MetaStore {
     stmt.close();
 
     return Iterables.toArray(res, String.class);
+  }
+
+  public List<PieceDao> getPieces(String query) throws SQLException {
+    List<PieceDao> pieces = new LinkedList<PieceDao>();
+
+    Statement stmt = co.createStatement();
+    ResultSet rs = stmt.executeQuery(query);
+
+    while(rs.next()) {
+      PieceDao dao = new PieceDao();
+      dao.loadFromResultSet(rs);
+      pieces.add(dao);
+    }
+
+    return pieces;
   }
 }
