@@ -12,15 +12,14 @@ import com.google.common.collect.Iterables;
 public class ConditionUtils {
 
   private static Pattern range0Pattern = Pattern.compile("(\\D)(\\d+?)-(\\d+?)"); // x1-23
-
-
+  @SuppressWarnings("FieldCanBeLocal")
   private static String rangeColumnName = "label1";
 
   /**
    * Handle range form like x3-12
    *
-   * @param rs
-   * @param r
+   * @param rs Range List
+   * @param r Range Token
    */
   private static boolean ranges0(List<String> rs, String r) {
     Matcher matcher = range0Pattern.matcher(r);
@@ -64,9 +63,9 @@ public class ConditionUtils {
 
     StringBuilder sb = new StringBuilder();
 
-    sb.append(rangeColumnName + " in (");
+    sb.append(rangeColumnName).append(" in (");
     for (int i = 0; i < rs.length; ++i) {
-      sb.append("'" + rs[i] + "'");
+      sb.append("'").append(rs[i]).append("'");
       if (i != rs.length - 1)
         sb.append(", ");
     }
