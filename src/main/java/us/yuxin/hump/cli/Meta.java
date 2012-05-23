@@ -28,8 +28,10 @@ public class Meta {
   final static String O_DATE = "date";
   final static String O_SCHEMA = "schema";
   final static String O_G1 = "g1";
+  final static String O_CONF = "conf";
 
   final static String DEFAULT_STORE_PATH = "conf/.meta";
+
 
 
   public static void main(String argv[]) throws Exception {
@@ -130,6 +132,9 @@ public class Meta {
     addOption("r", O_RANGE,  true, "Piece range", "range");
     addOption("d", O_DATE, true, "Date range", "date");
     addOption(null, O_SCHEMA, true, "Specify schema", "schema");
+
+    addOption("c", O_CONF, true, "Config dir postfix", "config");
+    addOption(null, O_G1, "Generate action one");
   }
 
 
