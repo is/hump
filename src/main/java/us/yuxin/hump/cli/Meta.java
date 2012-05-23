@@ -2,6 +2,8 @@ package us.yuxin.hump.cli;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
@@ -10,6 +12,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import us.yuxin.hump.meta.MetaStore;
+import us.yuxin.hump.meta.dao.PieceDao;
 
 public class Meta {
   CommandLine cmdline;
@@ -34,6 +37,9 @@ public class Meta {
   final static String DEFAULT_DB_OPTIONS = ";LOG=0;CACHE_SIZE=65536;LOCK_MODE=0;UNDO_LOG=0";
 
 
+  // ---- for hive schema generator
+  List<PieceDao> pieces;
+
 
   public static void main(String argv[]) throws Exception {
     Meta app = new Meta();
@@ -50,17 +56,45 @@ public class Meta {
       System.exit(0);
     }
 
-    parseCmdline(OptionsFileUtil.expandArguments(args));
+    parseCmdline(OptionsFileUtils.expandArguments(args));
 
     if (cmdline.hasOption(O_INIT)) {
       initMateStore();
     } else if (cmdline.hasOption(O_IMPORT)) {
       importMateStore();
     } else if (cmdline.hasOption(O_STATISTIC)) {
-      pieceStatistic();
+      statisticPieces();
+    } else if (cmdline.hasOption(O_GENERATE)) {
+      generateHiveSchema();
     }
   }
 
+
+  private void generateHiveSchema() throws ClassNotFoundException, SQLException {
+    String schema = generateHiveSchemaString();
+    System.out.println(schema);
+  }
+
+
+  private List<PieceDao> buildPieceList() throws ClassNotFoundException, SQLException {
+    MetaStore store = getMetaStore();
+    List<PieceDao> pieces = new LinkedList<PieceDao>();
+
+    String rangeConditon = ConditionUtils.rangeCondition(cmdline.getOptionValue(O_RANGE, ""));
+    String dateCondition = ConditionUtils.dateCondition(cmdline.getOptionValue(O_DATE, ""));
+
+    System.out.println(rangeConditon);
+    System.out.println(dateCondition);
+
+    return pieces;
+  }
+
+
+  private String generateHiveSchemaString() throws ClassNotFoundException, SQLException {
+    // TODO
+    pieces = buildPieceList();
+    return null;
+  }
 
 
   private static void pieceStatistic(MetaStore store, String column, String title) throws SQLException {
@@ -87,10 +121,10 @@ public class Meta {
   }
 
 
-  private void pieceStatistic() throws SQLException, ClassNotFoundException {
+  private void statisticPieces() throws SQLException, ClassNotFoundException {
     MetaStore store = getMetaStore();
-    pieceStatistic(store, "name", "name");
-    pieceStatistic(store, "label1", "origin");
+    pieceStatistic(store, "name", "schema");
+    pieceStatistic(store, "label1", "range");
     pieceStatistic(store, "label2", "date");
     store.close();
   }

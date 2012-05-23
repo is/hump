@@ -26,7 +26,7 @@ public class ConditionUtils {
    * @param rs Range List
    * @param r Range Token
    */
-  private static boolean ranges0(List<String> rs, String r) {
+  private static boolean range0(List<String> rs, String r) {
     Matcher matcher = range0Pattern.matcher(r);
     if (!matcher.matches())
       return false;
@@ -41,14 +41,14 @@ public class ConditionUtils {
   }
 
 
-  public static String[] ranges(String in) {
+  public static String[] range(String in) {
     // basic form: x1, x2, x3, x4
     // range form: x1-5, n3-7
     List<String> rs = new ArrayList<String>();
 
     for (String s: Splitter.on(",").trimResults().omitEmptyStrings().split(in)) {
       s = s.trim();
-      if (ranges0(rs, s))
+      if (range0(rs, s))
         continue;
 
       rs.add(s);
@@ -58,8 +58,8 @@ public class ConditionUtils {
     return Iterables.toArray(rs, String.class);
   }
 
-  public static String rangesCondition(String in) {
-    String rs[] = ranges(in);
+  public static String rangeCondition(String in) {
+    String rs[] = range(in);
     if (rs.length == 0)
       return "";
 
