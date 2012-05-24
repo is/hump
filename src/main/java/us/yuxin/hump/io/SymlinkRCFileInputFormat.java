@@ -112,7 +112,7 @@ public class SymlinkRCFileInputFormat<K extends LongWritable, V extends BytesRef
             FileInfo fi = new FileInfo();
             fi.length = Long.parseLong(line.substring(0, o1));
             int o2 = line.indexOf(',', o1 + 1);
-            fi.row = Long.parseLong(line.substring(o1, o2));
+            fi.row = Long.parseLong(line.substring(o1 + 1, o2));
             fi.path = new Path(line.substring(o2 + 1));
             fi.symlink = symlink.getPath();
 
