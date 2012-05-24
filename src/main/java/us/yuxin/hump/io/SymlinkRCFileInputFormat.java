@@ -83,11 +83,10 @@ public class SymlinkRCFileInputFormat<K extends LongWritable, V extends BytesRef
           splits.add(new FileSplit(path, length - bytesRemaining, bytesRemaining, new String[0]));
         }
       }
-      LOG.debug("Total # of splits:" + splits.size());
-      return splits.toArray(new FileSplit[splits.size()]);
     }
 
-    return null;
+    LOG.debug("Total # of splits:" + splits.size());
+    return splits.toArray(new FileSplit[splits.size()]);
   }
 
 
