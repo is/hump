@@ -45,6 +45,8 @@ public class SymlinkRCFileInputFormat<K extends LongWritable, V extends BytesRef
 		Reporter reporter) throws IOException {
 
 		reporter.setStatus(split.toString());
+		FileSplit s = (FileSplit)split;
+		LOG.info("GETRR: " + s.getPath().toString() + ":" + s.getLength());
 
 		return new RCFileRecordReader(job, (FileSplit) split);
 	}
@@ -59,6 +61,7 @@ public class SymlinkRCFileInputFormat<K extends LongWritable, V extends BytesRef
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     Path[] symlinksDirs = getInputPaths(job);
+		LOG.info("GET-SPLITS");
 
     if (symlinksDirs.length == 0) {
       throw new IOException("No input paths specified in job");
