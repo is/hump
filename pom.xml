@@ -45,6 +45,7 @@
         </executions>
       </plugin>
 
+			<!--
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -64,6 +65,7 @@
           </archive>
         </configuration>
       </plugin>
+    	-->
     </plugins>
   </build>
 
@@ -99,10 +101,12 @@
       <artifactId>hive-exec</artifactId>
       <version>0.9.0</version>
       <exclusions>
+
         <exclusion>
           <groupId>org.apache.hive</groupId>
           <artifactId>hive-serde</artifactId>
         </exclusion>
+        <!--
         <exclusion>
           <groupId>org.apache.hive</groupId>
           <artifactId>hive-shims</artifactId>
@@ -115,6 +119,7 @@
           <groupId>org.apache.hive</groupId>
           <artifactId>hive-metastore</artifactId>
         </exclusion>
+        -->
         <exclusion>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-core</artifactId>

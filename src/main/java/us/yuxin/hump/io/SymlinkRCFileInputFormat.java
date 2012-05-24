@@ -13,12 +13,15 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
+import org.apache.hadoop.hive.ql.io.RCFileRecordReader;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
 
 
 public class SymlinkRCFileInputFormat<K extends LongWritable, V extends BytesRefArrayWritable>
@@ -35,6 +38,16 @@ public class SymlinkRCFileInputFormat<K extends LongWritable, V extends BytesRef
     super();
   }
 
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public RecordReader<K, V> getRecordReader(InputSplit split, JobConf job,
+		Reporter reporter) throws IOException {
+
+		reporter.setStatus(split.toString());
+
+		return new RCFileRecordReader(job, (FileSplit) split);
+	}
 
 
   @Override
