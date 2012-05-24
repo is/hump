@@ -28,6 +28,8 @@ public class SymlinkRCFileInputFormat<K extends LongWritable, V extends BytesRef
   long blockSize = 1024 * 1024 * 64;
   final static double SPLIT_SLOP = 1.1;
 
+  public final static String SYMLINK_FILE_SIGN_V1 = "SYMLINK.RCFILE.V1";
+
 
   public SymlinkRCFileInputFormat() {
     super();
@@ -103,7 +105,7 @@ public class SymlinkRCFileInputFormat<K extends LongWritable, V extends BytesRef
 
         String line;
         line = reader.readLine();
-        if (line.equals("SYMLINK.RCFILE.V1")) {
+        if (line.equals(SYMLINK_FILE_SIGN_V1)) {
           while((line = reader.readLine()) != null) {
             int o1 = line.indexOf(',');
             // TODO error handle.

@@ -1,8 +1,10 @@
 package us.yuxin.hump.cli;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -12,6 +14,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import us.yuxin.hump.io.SymlinkRCFileInputFormat;
 import us.yuxin.hump.meta.MetaStore;
 import us.yuxin.hump.meta.dao.PieceDao;
 
@@ -33,6 +36,7 @@ public class Meta {
   final static String O_SCHEMA = "schema";
   final static String O_G1 = "g1";
   final static String O_CONF = "conf";
+  final static String O_SYMLINK = "symlink";
 
   final static String DEFAULT_STORE_PATH = "conf/.meta";
   final static String DEFAULT_DB_OPTIONS = ";LOG=0;CACHE_SIZE=65536;LOCK_MODE=0;UNDO_LOG=0";
@@ -71,9 +75,25 @@ public class Meta {
   }
 
 
-  private void generateHiveSchema() throws ClassNotFoundException, SQLException {
+  private void generateHiveSchema() throws ClassNotFoundException, SQLException, IOException {
+    pieces = buildPieceList();
     String schema = generateHiveSchemaString();
+    if (cmdline.hasOption(O_SYMLINK)) {
+      generateHiveRCFileSymlink();
+    }
     System.out.println(schema);
+  }
+
+
+  private void generateHiveRCFileSymlink() throws IOException {
+    PrintWriter writer = new PrintWriter(
+      new FileWriter(getTargetTableName() + ".symlink"));
+
+    writer.println(SymlinkRCFileInputFormat.SYMLINK_FILE_SIGN_V1);
+    for (PieceDao p: pieces) {
+      writer.format("%d,%d,%s\n", p.size, p.rows, p.target);
+    }
+    writer.close();
   }
 
 
@@ -106,15 +126,19 @@ public class Meta {
   }
 
 
+  private String getTargetTableName() {
+    return cmdline.getOptionValue(O_TARGET, cmdline.getOptionValue(O_NAME));
+  }
+
+
   private String generateHiveSchemaString() throws ClassNotFoundException, SQLException {
     // TODO
-    pieces = buildPieceList();
     PieceDao piece = pieces.get(pieces.size() - 1);
 
     Gen gen = new Gen();
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PrintStream ps = new PrintStream(baos);
-    String tablename = cmdline.getOptionValue(O_TARGET, cmdline.getOptionValue(O_NAME));
+    String tablename = getTargetTableName();
     gen.setOutStream(ps);
     String[] params = new String[] {
       "gen", "-f", "id", "-e", "-P", "s:string,d:string",
@@ -128,14 +152,6 @@ public class Meta {
       e.printStackTrace();
       return null;
     }
-
-
-//    ps.format("ALTER TABLE %s ADD \n", tablename);
-//    for (PieceDao p: pieces) {
-//      ps.format("PARTITION (s='%s', d='%s') location '%s' \n",
-//        p.label1, p.label2, p.target.replaceFirst("/rcfile", ""));
-//    }
-//    ps.println(";");
 
     for (PieceDao p: pieces) {
       ps.format("ALTER TABLE %s ADD IF NOT EXISTS\n PARTITION (s='%s', d='%s') location '%s'; \n",
@@ -219,6 +235,7 @@ public class Meta {
 
     addOption("c", O_CONF, true, "Config dir postfix", "config");
     addOption(null, O_G1, "Generate action one");
+    addOption(null, O_SYMLINK, "Generate symlink file");
   }
 
 
