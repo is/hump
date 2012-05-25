@@ -151,7 +151,8 @@ public class SymlinkRCFileInputFormat<K extends LongWritable, V extends BytesRef
 
   @Override
   public ContentSummary getContentSummary(Path p, JobConf job) throws IOException {
-    if (p.getName().endsWith(".symlink")) {List<FileInfo> targetPaths = new ArrayList<FileInfo>();
+    if (p.getName().endsWith(".symlink")) {
+      List<FileInfo> targetPaths = new ArrayList<FileInfo>();
       long[] summary = {0, 0, 0};
       try {
         getTargetPathsFromSymlinksDirs(job, new Path[]{p}, targetPaths);
@@ -191,7 +192,7 @@ public class SymlinkRCFileInputFormat<K extends LongWritable, V extends BytesRef
         FileSystem fileSystem = symlinkDir.getFileSystem(job);
         FileStatus fStatus = fileSystem.getFileStatus(symlinkDir);
 
-        FileStatus symlinks[] = null;
+        FileStatus symlinks[];
         if (!fStatus.isDir()) {
           symlinks = new FileStatus[]{fStatus};
         } else {
