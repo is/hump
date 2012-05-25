@@ -38,6 +38,8 @@ public class Meta {
   final static String O_CONF = "conf";
   final static String O_SYMLINK = "symlink";
 
+	final static String O_WIDTH = "width";
+
   final static String DEFAULT_STORE_PATH = "conf/.meta";
   final static String DEFAULT_DB_OPTIONS = ";LOG=0;CACHE_SIZE=65536;LOCK_MODE=0;UNDO_LOG=0";
 
@@ -51,6 +53,28 @@ public class Meta {
     app.run(argv);
   }
 
+
+	private void prepareCmdlineOptions() {
+		options = new Options();
+		addOption("I", O_INIT, false, "JDBC Driver classname");
+		addOption("i", O_IMPORT, false, "Import log file");
+		addOption("S", O_STORE, true, "Metastore path", "meta");
+		addOption("s", O_STATISTIC, "Pieces statistic");
+
+		addOption("g", O_GENERATE, "Generate hive table schema");
+		addOption(null, O_CATEGORY, true, "Specify category", "category");
+		addOption("n", O_NAME, true, "Table name", "table");
+		addOption("t", O_TARGET, true, "Target table name", "table");
+		addOption("r", O_RANGE,  true, "Piece range", "range");
+		addOption("d", O_DATE, true, "Date range", "date");
+		addOption(null, O_SCHEMA, true, "Specify schema", "schema");
+
+		addOption("c", O_CONF, true, "Config dir postfix", "config");
+		addOption(null, O_G1, "Generate action one");
+		addOption(null, O_SYMLINK, "Generate symlink file");
+
+		addOption("w", O_WIDTH, "Set console width");
+	}
 
   private void run(String args[]) throws Exception {
     prepareCmdlineOptions();
@@ -162,10 +186,11 @@ public class Meta {
   }
 
 
-  private static void pieceStatistic(MetaStore store, String column, String title) throws SQLException {
+  private void pieceStatistic(MetaStore store, String column, String title) throws SQLException {
     String values[] = store.getPieceStatisticByColumn(column);
 
     System.out.format("-- %s:%s -- \n", title.toUpperCase(), column);
+		int width = Integer.parseInt(cmdline.getOptionValue(O_WIDTH, "70"));
 
     String oline = "   ";
     for (int i = 0; i < values.length; ++i) {
@@ -174,7 +199,7 @@ public class Meta {
       if (i != values.length - 1) {
         oline += " ";
       }
-      if (oline.length() >= 70) {
+      if (oline.length() >= width) {
         System.out.println(oline);
         oline = "   ";
       }
@@ -218,25 +243,7 @@ public class Meta {
   }
 
 
-  private void prepareCmdlineOptions() {
-    options = new Options();
-    addOption("I", O_INIT, false, "JDBC Driver classname");
-    addOption("i", O_IMPORT, false, "Import log file");
-    addOption("S", O_STORE, true, "Metastore path", "meta");
-    addOption("s", O_STATISTIC, "Pieces statistic");
 
-    addOption("g", O_GENERATE, "Generate hive table schema");
-    addOption(null, O_CATEGORY, true, "Specify category", "category");
-    addOption("n", O_NAME, true, "Table name", "table");
-    addOption("t", O_TARGET, true, "Target table name", "table");
-    addOption("r", O_RANGE,  true, "Piece range", "range");
-    addOption("d", O_DATE, true, "Date range", "date");
-    addOption(null, O_SCHEMA, true, "Specify schema", "schema");
-
-    addOption("c", O_CONF, true, "Config dir postfix", "config");
-    addOption(null, O_G1, "Generate action one");
-    addOption(null, O_SYMLINK, "Generate symlink file");
-  }
 
 
   private void addOption(String shortOpt, String longOpt, boolean hasArg, String description, String argName) {
