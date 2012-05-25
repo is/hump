@@ -27,17 +27,30 @@ public class RCFileStore implements Store {
   CompressionCodec codec;
   StoreCounter counter;
 
+	boolean useTemporary;
+
+	Path lastRealPath;
+	Path lastTempPath;
+
+
   public RCFileStore(FileSystem fs, Configuration conf, CompressionCodec codec) {
     this.fs = fs;
     this.conf = conf;
     this.codec = codec;
     this.counter = new StoreCounter();
+		this.useTemporary = true;
   }
+
+
+	public void setUseTemporary(boolean useTemporary) {
+		this.useTemporary = useTemporary;
+	}
 
 
   public void store(Path file, JdbcSource source, Properties prop) throws IOException {
     store(file, source, prop, null);
   }
+
 
   public void store(Path file, JdbcSource source, Properties prop, StoreCounter counter) throws IOException {
     if (source == null || !source.isReady()) {
@@ -61,6 +74,14 @@ public class RCFileStore implements Store {
     if (codec != null) {
       file = new Path(file.toString()  + codec.getDefaultExtension());
     }
+		lastRealPath = file;
+
+		if (useTemporary) {
+			lastTempPath = new Path(conf.get("hadoop.tmp.dir", "/tmp") +
+				"/" + conf.get("user.name", "hadoop") + "/" +
+				lastRealPath.toString().replaceAll("/", "__"));
+			file = lastTempPath;
+		}
 
     // Set dump object if counter is null
     if (counter == null) {
@@ -94,6 +115,10 @@ public class RCFileStore implements Store {
     }
     writer.close();
     counter.outBytes = fs.getFileStatus(file).getLen();
+
+		if (useTemporary) {
+			fs.rename(lastTempPath, lastRealPath);
+		}
   }
 
 
@@ -133,4 +158,14 @@ public class RCFileStore implements Store {
     }
     return metadata;
   }
+
+
+	public Path getLastRealPath() {
+		return lastRealPath;
+	}
+
+
+	public Path getLastTempPath() {
+		return lastTempPath;
+	}
 }
