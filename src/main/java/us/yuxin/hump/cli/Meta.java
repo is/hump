@@ -91,7 +91,7 @@ public class Meta {
 
     writer.println(SymlinkRCFileInputFormat.SYMLINK_FILE_SIGN_V1);
     for (PieceDao p: pieces) {
-      writer.format("%d,%d,%s\n", p.size, p.rows, p.target);
+      writer.format("%d,%d,%s.snappy\n", p.size, p.rows, p.target);
     }
     writer.close();
   }
