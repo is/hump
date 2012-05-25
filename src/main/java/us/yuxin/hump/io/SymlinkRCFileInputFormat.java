@@ -208,7 +208,7 @@ public class SymlinkRCFileInputFormat<K extends LongWritable, V extends BytesRef
               }
 
               toAddPathToPart.put(realPath, partDesc);
-              pathToAliases.put(line, aliases);
+              pathToAliases.put(realPath, aliases);
             }
           }
           reader.close();
