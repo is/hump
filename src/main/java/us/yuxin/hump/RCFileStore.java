@@ -27,10 +27,10 @@ public class RCFileStore implements Store {
   CompressionCodec codec;
   StoreCounter counter;
 
-	boolean useTemporary;
+  boolean useTemporary;
 
-	Path lastRealPath;
-	Path lastTempPath;
+  Path lastRealPath;
+  Path lastTempPath;
 
 
   public RCFileStore(FileSystem fs, Configuration conf, CompressionCodec codec) {
@@ -38,13 +38,13 @@ public class RCFileStore implements Store {
     this.conf = conf;
     this.codec = codec;
     this.counter = new StoreCounter();
-		this.useTemporary = true;
+    this.useTemporary = true;
   }
 
 
-	public void setUseTemporary(boolean useTemporary) {
-		this.useTemporary = useTemporary;
-	}
+  public void setUseTemporary(boolean useTemporary) {
+    this.useTemporary = useTemporary;
+  }
 
 
   public void store(Path file, JdbcSource source, Properties prop) throws IOException {
@@ -72,16 +72,16 @@ public class RCFileStore implements Store {
     SequenceFile.Metadata metadata = createRCFileMetadata(jdbcMetadata, prop);
 
     if (codec != null) {
-      file = new Path(file.toString()  + codec.getDefaultExtension());
+      file = new Path(file.toString() + codec.getDefaultExtension());
     }
-		lastRealPath = file;
+    lastRealPath = file;
 
-		if (useTemporary) {
-			lastTempPath = new Path(conf.get("hadoop.tmp.dir", "/tmp") +
-				"/" + conf.get("user.name", "hadoop") + "/" +
-				lastRealPath.toString().replaceAll("/", "__"));
-			file = lastTempPath;
-		}
+    if (useTemporary) {
+      lastTempPath = new Path("/tmp/hump-" +
+        conf.get("user.name", "hadoop") + "/" +
+        lastRealPath.toString().replaceAll("/", "__"));
+      file = lastTempPath;
+    }
 
     // Set dump object if counter is null
     if (counter == null) {
@@ -103,7 +103,7 @@ public class RCFileStore implements Store {
             value = rs.getObject(c + 1);
             ++counter.cells;
           } catch (SQLException e) {
-            throw new IOException("Failed to fetch data from JDBC source, column is "  + jdbcMetadata.names[c] + "/" + c, e);
+            throw new IOException("Failed to fetch data from JDBC source, column is " + jdbcMetadata.names[c] + "/" + c, e);
           }
           bytes.set(c, valueToBytesRef(value, types[c], counter));
         }
@@ -116,9 +116,10 @@ public class RCFileStore implements Store {
     writer.close();
     counter.outBytes = fs.getFileStatus(file).getLen();
 
-		if (useTemporary) {
-			fs.rename(lastTempPath, lastRealPath);
-		}
+    if (useTemporary) {
+      fs.mkdirs(lastRealPath.getParent());
+      fs.rename(lastTempPath, lastRealPath);
+    }
   }
 
 
@@ -160,12 +161,12 @@ public class RCFileStore implements Store {
   }
 
 
-	public Path getLastRealPath() {
-		return lastRealPath;
-	}
+  public Path getLastRealPath() {
+    return lastRealPath;
+  }
 
 
-	public Path getLastTempPath() {
-		return lastTempPath;
-	}
+  public Path getLastTempPath() {
+    return lastTempPath;
+  }
 }
