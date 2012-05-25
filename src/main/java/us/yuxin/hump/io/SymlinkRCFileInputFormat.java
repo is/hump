@@ -46,16 +46,16 @@ public class SymlinkRCFileInputFormat<K extends LongWritable, V extends BytesRef
   }
 
 
-	@Override
-	@SuppressWarnings("unchecked")
-	public RecordReader<K, V> getRecordReader(InputSplit split, JobConf job,
-		Reporter reporter) throws IOException {
+  @Override
+  @SuppressWarnings("unchecked")
+  public RecordReader<K, V> getRecordReader(InputSplit split, JobConf job,
+                                            Reporter reporter) throws IOException {
 
-		reporter.setStatus(split.toString());
-		// FileSplit s = (FileSplit)split;
-		// LOG.info("GETRR: " + s.getPath().toString() + ":" + s.getLength());
-		return new RCFileRecordReader(job, (FileSplit) split);
-	}
+    reporter.setStatus(split.toString());
+    // FileSplit s = (FileSplit)split;
+    // LOG.info("GETRR: " + s.getPath().toString() + ":" + s.getLength());
+    return new RCFileRecordReader(job, (FileSplit) split);
+  }
 
 
   @Override
@@ -78,24 +78,24 @@ public class SymlinkRCFileInputFormat<K extends LongWritable, V extends BytesRef
     job.setLong("mapreduce.input.num.files", targetPaths.size());
     long totalSize = 0;
 
-    for (FileInfo fi: targetPaths) {
+    for (FileInfo fi : targetPaths) {
       totalSize += fi.length;
     }
 
-    long goalSize = totalSize / (numSplits == 0 ? 1: numSplits);
+    long goalSize = totalSize / (numSplits == 0 ? 1 : numSplits);
     long minSize = Math.max(job.getLong("mapred.min.split.size", 1), minSplitSize);
 
     ArrayList<FileSplit> splits = new ArrayList<FileSplit>(numSplits);
 
-    for (FileInfo fi: targetPaths) {
+    for (FileInfo fi : targetPaths) {
       Path path = fi.path;
       long length = fi.length;
 
-      if (length != 0 ) /*isSplitable is  always true */ {
+      if (length != 0) /*isSplitable is  always true */ {
         long splitSize = computeSplitSize(goalSize, minSize, blockSize);
         long bytesRemaining = length;
 
-        while(((double)bytesRemaining) / splitSize > SPLIT_SLOP) {
+        while (((double) bytesRemaining) / splitSize > SPLIT_SLOP) {
           splits.add(new FileSplit(path, length - bytesRemaining, splitSize, new String[0]));
           bytesRemaining -= splitSize;
         }
@@ -115,18 +115,18 @@ public class SymlinkRCFileInputFormat<K extends LongWritable, V extends BytesRef
     Configuration conf, Path[] symlinksDirs,
     List<FileInfo> targetPaths) throws IOException {
 
-    for (Path symlinkDir: symlinksDirs) {
+    for (Path symlinkDir : symlinksDirs) {
       FileSystem fileSystem = symlinkDir.getFileSystem(conf);
       FileStatus[] symlinks = fileSystem.listStatus(symlinkDir);
 
-      for (FileStatus symlink: symlinks) {
+      for (FileStatus symlink : symlinks) {
         BufferedReader reader = new BufferedReader(
           new InputStreamReader(fileSystem.open(symlink.getPath())));
 
         String line;
         line = reader.readLine();
         if (line.equals(SYMLINK_FILE_SIGN_V1)) {
-          while((line = reader.readLine()) != null) {
+          while ((line = reader.readLine()) != null) {
             int o1 = line.indexOf(',');
             // TODO error handle.
             FileInfo fi = new FileInfo();
@@ -151,20 +151,28 @@ public class SymlinkRCFileInputFormat<K extends LongWritable, V extends BytesRef
 
   @Override
   public ContentSummary getContentSummary(Path p, JobConf job) throws IOException {
-    long[] summary = {0, 0, 0};
-    List<FileInfo> targetPaths = new ArrayList<FileInfo>();
-    try {
-      getTargetPathsFromSymlinksDirs(job, new Path[] {p}, targetPaths);
-    } catch (Exception e) {
-      throw new IOException("Error parsing symlinks from specified job input path.", e);
+    if (p.getName().endsWith(".symlink")) {List<FileInfo> targetPaths = new ArrayList<FileInfo>();
+      long[] summary = {0, 0, 0};
+      try {
+        getTargetPathsFromSymlinksDirs(job, new Path[]{p}, targetPaths);
+      } catch (Exception e) {
+        throw new IOException("Error parsing symlinks from specified job input path.", e);
+      }
+
+      for (FileInfo fi : targetPaths) {
+        summary[0] += fi.length;
+        summary[1] += 1;
+      }
+
+      return new ContentSummary(summary[0], summary[1], summary[2]);
     }
 
-    for (FileInfo fi: targetPaths) {
-      summary[0] += fi.length;
-      summary[1] += 1;
+    if (p.getName().endsWith("rcfile") || p.getName().endsWith("rcfile.snappy")) {
+      FileSystem fileSystem = p.getFileSystem(job);
+      FileStatus fStatus = fileSystem.getFileStatus(p);
+      return new ContentSummary(fStatus.getLen(), 1, 0);
     }
-
-    return new ContentSummary(summary[0], summary[1], summary[2]);
+    return new ContentSummary(0, 0, 0);
   }
 
   @Override
@@ -174,7 +182,7 @@ public class SymlinkRCFileInputFormat<K extends LongWritable, V extends BytesRef
     Map<String, PartitionDesc> toAddPathToPart = new HashMap<String, PartitionDesc>();
     Map<String, ArrayList<String>> pathToAliases = work.getPathToAliases();
 
-    for (Map.Entry<String, PartitionDesc> pathPartEntry: pathToParts.entrySet()) {
+    for (Map.Entry<String, PartitionDesc> pathPartEntry : pathToParts.entrySet()) {
       String path = pathPartEntry.getKey();
       PartitionDesc partDesc = pathPartEntry.getValue();
 
@@ -185,20 +193,20 @@ public class SymlinkRCFileInputFormat<K extends LongWritable, V extends BytesRef
 
         FileStatus symlinks[] = null;
         if (!fStatus.isDir()) {
-          symlinks = new FileStatus[] {fStatus};
+          symlinks = new FileStatus[]{fStatus};
         } else {
           symlinks = fileSystem.listStatus(symlinkDir);
         }
 
         toRemovePaths.add(path);
         ArrayList<String> aliases = pathToAliases.remove(path);
-        for (FileStatus symlink: symlinks) {
+        for (FileStatus symlink : symlinks) {
           BufferedReader reader = new BufferedReader(
             new InputStreamReader(fileSystem.open(symlink.getPath())));
           String line;
           line = reader.readLine();
           if (line.equals(SYMLINK_FILE_SIGN_V1)) {
-            while((line = reader.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
               int o1 = line.indexOf(',');
               int o2 = line.indexOf(',', o1 + 1);
               long row = Long.parseLong(line.substring(o1 + 1, o2));
@@ -217,7 +225,7 @@ public class SymlinkRCFileInputFormat<K extends LongWritable, V extends BytesRef
     }
 
     pathToParts.putAll(toAddPathToPart);
-    for (String toRemove: toRemovePaths) {
+    for (String toRemove : toRemovePaths) {
       pathToParts.remove(toRemove);
     }
   }
