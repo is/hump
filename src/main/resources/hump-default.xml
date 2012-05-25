@@ -42,4 +42,9 @@
     <value>false</value>
   </property>
 
+	<property>
+		<name>hump.dump.direct</name>
+		<value>true</value>
+	</property>
+
 </configuration>

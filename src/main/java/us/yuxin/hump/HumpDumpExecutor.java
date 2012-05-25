@@ -87,6 +87,8 @@ public class HumpDumpExecutor implements HumpExecutor {
     humpUpdate = conf.getBoolean(Hump.CONF_HUMP_UPDATE, false);
     store = new RCFileStore(fs, conf, codec);
 
+    store.setUseTemporary(!conf.getBoolean(Hump.CONF_HUMP_DUMP_DIRECT, false));
+
     globalCounter = new StoreCounter();
     singleCounter = new StoreCounter();
     taskCounter = 0;
