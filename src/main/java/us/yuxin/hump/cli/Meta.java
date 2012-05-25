@@ -73,7 +73,7 @@ public class Meta {
 		addOption(null, O_G1, "Generate action one");
 		addOption(null, O_SYMLINK, "Generate symlink file");
 
-		addOption("w", O_WIDTH, "Set console width");
+		addOption("w", O_WIDTH, true, "Set console width", "width");
 	}
 
   private void run(String args[]) throws Exception {
