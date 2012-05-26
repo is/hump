@@ -8,7 +8,7 @@ import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
-import us.yuxin.hump.meta.dao.PieceDao;
+import us.yuxin.hump.meta.entity.Piece;
 
 public class TestMetaStore {
   @Before
@@ -37,7 +37,7 @@ public class TestMetaStore {
 
     String jdbcURL = "jdbc:hsqldb:file:test-tmp/import/;shutdown=true";
     MetaStore store;
-    PieceDao piece = new PieceDao();
+    Piece piece = new Piece();
 
     store = new MetaStore();
     store.open(jdbcURL);
@@ -66,7 +66,7 @@ public class TestMetaStore {
     String jdbcURL = "jdbc:hsqldb:file:test-tmp/test/;shutdown=true";
 
     MetaStore store = new MetaStore();
-    PieceDao piece = new PieceDao();
+    Piece piece = new Piece();
     store.open(jdbcURL);
     store.createSchema();
     piece.id = "test0";
@@ -79,7 +79,7 @@ public class TestMetaStore {
     piece.label2 = "20110306";
     Assert.assertFalse(store.savePiece(piece));
 
-    piece = new PieceDao();
+    piece = new Piece();
     Assert.assertFalse(store.loadPiece(piece, "test1"));
     Assert.assertTrue(store.loadPiece(piece, "test0"));
     Assert.assertEquals("20110306", piece.label2);

@@ -16,7 +16,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import us.yuxin.hump.io.SymlinkRCFileInputFormat;
 import us.yuxin.hump.meta.MetaStore;
-import us.yuxin.hump.meta.dao.PieceDao;
+import us.yuxin.hump.meta.entity.Piece;
 
 public class Meta {
   CommandLine cmdline;
@@ -45,7 +45,7 @@ public class Meta {
 
 
   // ---- for hive schema generator
-  List<PieceDao> pieces;
+  List<Piece> pieces;
 
 
   public static void main(String argv[]) throws Exception {
@@ -114,16 +114,16 @@ public class Meta {
       new FileWriter(getTargetTableName() + ".symlink"));
 
     writer.println(SymlinkRCFileInputFormat.SYMLINK_FILE_SIGN_V1);
-    for (PieceDao p: pieces) {
+    for (Piece p: pieces) {
       writer.format("%d,%d,%s.snappy\n", p.size, p.rows, p.target);
     }
     writer.close();
   }
 
 
-  private List<PieceDao> buildPieceList() throws ClassNotFoundException, SQLException {
+  private List<Piece> buildPieceList() throws ClassNotFoundException, SQLException {
     MetaStore store = getMetaStore();
-    List<PieceDao> pieces;
+    List<Piece> pieces;
 
     String rangeConditon = ConditionUtils.rangeCondition(cmdline.getOptionValue(O_RANGE, ""));
     String dateCondition = ConditionUtils.dateCondition(cmdline.getOptionValue(O_DATE, ""));
@@ -157,7 +157,7 @@ public class Meta {
 
   private String generateHiveSchemaString() throws ClassNotFoundException, SQLException {
     // TODO
-    PieceDao piece = pieces.get(pieces.size() - 1);
+    Piece piece = pieces.get(pieces.size() - 1);
 
     Gen gen = new Gen();
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -177,7 +177,7 @@ public class Meta {
       return null;
     }
 
-    for (PieceDao p: pieces) {
+    for (Piece p: pieces) {
       ps.format("ALTER TABLE %s ADD IF NOT EXISTS\n PARTITION (s='%s', d='%s') location '%s'; \n",
         tablename, p.label1, p.label2, p.target.replaceFirst("/rcfile", ""));
     }

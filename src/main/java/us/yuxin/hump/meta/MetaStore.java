@@ -15,7 +15,7 @@ import java.util.List;
 import com.google.common.collect.Iterables;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
-import us.yuxin.hump.meta.dao.PieceDao;
+import us.yuxin.hump.meta.entity.Piece;
 
 public class MetaStore {
   String dbUrl;
@@ -107,19 +107,19 @@ public class MetaStore {
   }
 
 
-  public boolean savePiece(PieceDao piece) throws SQLException {
+  public boolean savePiece(Piece piece) throws SQLException {
     boolean ret = piece.save(co);
     co.commit();
     return ret;
   }
 
 
-  public boolean savePieceWithoutCommit(PieceDao piece) throws SQLException {
+  public boolean savePieceWithoutCommit(Piece piece) throws SQLException {
     return piece.save(co);
   }
 
 
-  public boolean loadPiece(PieceDao piece, String id) throws SQLException {
+  public boolean loadPiece(Piece piece, String id) throws SQLException {
     return piece.load(co, id);
   }
 
@@ -133,7 +133,7 @@ public class MetaStore {
         break;
 
       JsonNode node = mapper.readValue(line.trim(), JsonNode.class);
-      PieceDao piece = new PieceDao();
+      Piece piece = new Piece();
       if (node.get("id") == null)
         continue;
       piece.loadFromJson(node);
@@ -184,14 +184,14 @@ public class MetaStore {
     return Iterables.toArray(res, String.class);
   }
 
-  public List<PieceDao> getPieces(String query) throws SQLException {
-    List<PieceDao> pieces = new LinkedList<PieceDao>();
+  public List<Piece> getPieces(String query) throws SQLException {
+    List<Piece> pieces = new LinkedList<Piece>();
 
     Statement stmt = co.createStatement();
     ResultSet rs = stmt.executeQuery(query);
 
     while(rs.next()) {
-      PieceDao dao = new PieceDao();
+      Piece dao = new Piece();
       dao.loadFromResultSet(rs);
       pieces.add(dao);
     }

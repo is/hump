@@ -1,5 +1,9 @@
-package us.yuxin.hump.meta.dao;
+package us.yuxin.hump.meta.entity;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,8 +15,12 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import org.codehaus.jackson.JsonNode;
 
-public class PieceDao {
+@Entity
+@Table(name = "piece")
+public class Piece {
+  @Id
   public String id;
+
   public String name;
   public String schema;
   public String category;
@@ -21,12 +29,21 @@ public class PieceDao {
   public String label3;
   public String tags;
   public String state;
+
   public String target;
+  public String postfix;
   public int rows;
   public long size;
+
+  @Column(length = 1024)
   public String columns;
+
+  @Column(length = 1024)
   public String hivetypes;
+
+  @Column(length = 1024)
   public String sqltypes;
+
   public Timestamp created;
   public Timestamp lastUpdate;
 
