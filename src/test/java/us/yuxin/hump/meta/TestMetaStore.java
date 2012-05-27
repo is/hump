@@ -45,7 +45,7 @@ public class TestMetaStore {
     session.close();
 
     session = sessionFactory.openSession();
-    piece = (Piece)session.get(Piece.class, "hell-world");
+    piece = (Piece)session.get(Piece.class, "hello-world");
     session.evict(piece);
     session.close();
     Assert.assertSame("hello-world", piece.id);

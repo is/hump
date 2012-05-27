@@ -178,8 +178,14 @@ public class Meta {
     }
 
     for (Piece p: pieces) {
+      String target;
+
+      if (p.cext == null)
+        target = p.target;
+      else
+        target = p.target + p.cext;
       ps.format("ALTER TABLE %s ADD IF NOT EXISTS\n PARTITION (s='%s', d='%s') location '%s'; \n",
-        tablename, p.label1, p.label2, p.target.replaceFirst("/rcfile", ""));
+        tablename, p.label1, p.label2, target);
     }
 
     return baos.toString();

@@ -23,6 +23,7 @@ public class HumpDumpExecutor implements HumpExecutor {
   FileSystem fs;
   RCFileStore store;
   CompressionCodec codec;
+  String codecExtension;
   Configuration conf;
 
   BlockingQueue<String> feedbackQueue;
@@ -75,6 +76,7 @@ public class HumpDumpExecutor implements HumpExecutor {
     if (conf.get(Hump.CONF_HUMP_COMPRESSION_CODEC) != null) {
       try {
         codec = (CompressionCodec) conf.getClass(Hump.CONF_HUMP_COMPRESSION_CODEC, null).newInstance();
+        codecExtension = codec.getDefaultExtension();
       } catch (InstantiationException e) {
         e.printStackTrace();
         throw new IOException("Invalid compression codec", e);
@@ -229,10 +231,11 @@ public class HumpDumpExecutor implements HumpExecutor {
 
   private boolean isTargetExist() throws IOException {
     if (codec != null) {
-      realTarget = target + codec.getDefaultExtension();
+      realTarget = target + codecExtension;
     } else {
       realTarget = target;
     }
+
     return fs.exists(new Path(realTarget));
   }
 
@@ -244,6 +247,9 @@ public class HumpDumpExecutor implements HumpExecutor {
     feed.put("name", name);
     feed.put("beginTime", new SimpleDateFormat("yyyyMMdd.HHmmss").format(new Date(taskBeginTime)));
     feed.put("target", task.get("target").getTextValue());
+    if (codec != null) {
+      feed.put("cext", codecExtension);
+    }
     feed.put("taskid", context.getTaskAttemptID().toString());
 
     if (taskEx != null) {
