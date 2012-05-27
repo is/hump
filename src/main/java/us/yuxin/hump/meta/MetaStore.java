@@ -4,7 +4,6 @@ package us.yuxin.hump.meta;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,10 +27,6 @@ public class MetaStore {
   public MetaStore() {
   }
 
-
-  public MetaStore(String url) throws ClassNotFoundException, SQLException {
-    open(url);
-  }
 
   public void create(String url) {
     open(url, true);
@@ -85,10 +80,14 @@ public class MetaStore {
   }
 
 
-  public void importSummaryLog(BufferedReader br) throws IOException, SQLException {
+  public void importSummaryLog(BufferedReader br) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
 
-    int count = 0;
+    long beginTS = System.currentTimeMillis();
+
+    int flashCount = 0;
+    int bigCount = 0;
+    int dotCount = 0;
     session.beginTransaction();
 
     while (true) {
@@ -105,19 +104,30 @@ public class MetaStore {
       if (!piece.state.equals("SKIP")) {
         System.out.println("piece:" + piece.id);
         session.saveOrUpdate(piece);
-        ++count;
-        if (count > 200) {
+        ++flashCount;
+        ++bigCount;
+        ++dotCount;
+        if (dotCount >= 5000) {
+          System.out.write('.');
+          System.out.flush();
+        }
+
+        if (flashCount > 500) {
           session.flush();
           session.clear();
-          count = 0;
+          flashCount = 0;
         }
       }
     }
     session.getTransaction().commit();
+
+    System.out.println('.');
+    System.out.format("Update %d pieces in %.2f seconds", bigCount,
+      (System.currentTimeMillis() - beginTS) / 1000f);
   }
 
 
-  public void importSummaryLog(String filename) throws IOException, SQLException {
+  public void importSummaryLog(String filename) throws IOException {
     BufferedReader br = new BufferedReader(new FileReader(filename));
     importSummaryLog(br);
     br.close();
@@ -179,7 +189,7 @@ public class MetaStore {
   }
 
 
-  public List<Piece> getPieces(String query) throws SQLException {
+  public List<Piece> getPieces(String query) {
     List<Piece> pieces = new LinkedList<Piece>();
 
     List res = session.createQuery(query).list();
