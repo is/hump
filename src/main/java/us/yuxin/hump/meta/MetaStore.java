@@ -102,7 +102,6 @@ public class MetaStore {
 
       piece.loadFromJson(node);
       if (!piece.state.equals("SKIP")) {
-        System.out.println("piece:" + piece.id);
         session.saveOrUpdate(piece);
         ++flashCount;
         ++bigCount;
@@ -110,6 +109,7 @@ public class MetaStore {
         if (dotCount >= 5000) {
           System.out.write('.');
           System.out.flush();
+          dotCount = 0;
         }
 
         if (flashCount > 500) {
@@ -122,7 +122,7 @@ public class MetaStore {
     session.getTransaction().commit();
 
     System.out.println('.');
-    System.out.format("Update %d pieces in %.2f seconds", bigCount,
+    System.out.format("Update %d pieces in %.2f seconds\n", bigCount,
       (System.currentTimeMillis() - beginTS) / 1000f);
   }
 
