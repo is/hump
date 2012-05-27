@@ -69,7 +69,7 @@ public class Meta {
 		addOption("d", O_DATE, true, "Date range", "date");
 		addOption(null, O_SCHEMA, true, "Specify schema", "schema");
 
-		addOption("c", O_CONF, true, "Config dir postfix", "config");
+		addOption("c", O_CONF, true, "Config directory", "dir");
 		addOption(null, O_G1, "Generate action one");
 		addOption(null, O_SYMLINK, "Generate symlink file");
 
@@ -130,7 +130,7 @@ public class Meta {
     String name = cmdline.getOptionValue(O_NAME);
 
     StringBuilder sb = new StringBuilder();
-    sb.append("SELECT * FROM piece WHERE name = '").append(name).append("'");
+    sb.append("SELECT p FROM Piece p WHERE p.name = '").append(name).append("'");
 
     if (rangeConditon.length() > 0)
       sb.append(" AND ").append(rangeConditon);
@@ -138,7 +138,7 @@ public class Meta {
     if (dateCondition.length() > 0)
       sb.append(" AND ").append(dateCondition);
 
-    sb.append(" ORDER BY name, label2, label1");
+    sb.append(" ORDER BY p.name, p.label2, p.label1");
     String query = sb.toString();
     System.out.println("-- QUERY: " + query);
 
@@ -228,22 +228,20 @@ public class Meta {
   }
 
 
-  private void initMateStore() throws SQLException, ClassNotFoundException {
-    MetaStore store = getMetaStore();
-    store.createSchema();
+  private void initMateStore() {
+    MetaStore store = new MetaStore();
+    String dbPath = cmdline.getOptionValue(O_STORE, DEFAULT_STORE_PATH);
+    store.create("jdbc:h2:" + dbPath + DEFAULT_DB_OPTIONS);
     store.close();
   }
 
-  private MetaStore getMetaStore() throws ClassNotFoundException, SQLException {
-    MetaStore store = new MetaStore();
 
+  private MetaStore getMetaStore() {
+    MetaStore store = new MetaStore();
     String dbPath = cmdline.getOptionValue(O_STORE, DEFAULT_STORE_PATH);
     store.open("jdbc:h2:" + dbPath + DEFAULT_DB_OPTIONS);
     return store;
   }
-
-
-
 
 
   private void addOption(String shortOpt, String longOpt, boolean hasArg, String description, String argName) {

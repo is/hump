@@ -1,5 +1,6 @@
 package us.yuxin.hump.meta.entity;
 
+import javax.jdo.annotations.Index;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -21,10 +22,14 @@ public class Piece {
   @Id
   public String id;
 
+  @Index
   public String name;
   public String schema;
   public String category;
+
+  @Index
   public String label1;
+  @Index
   public String label2;
   public String label3;
   public String tags;
@@ -46,64 +51,6 @@ public class Piece {
 
   public Timestamp created;
   public Timestamp lastUpdate;
-
-  public boolean save(Connection co) throws SQLException {
-
-    String updateQuery = "UPDATE piece SET name=?, schema=?, category=?, " +
-      "label1=?, label2=?, label3=?, tags=?, state=?, " +
-      "target=?, rows=?, size=?, columns=?, hivetypes=?, " +
-      "sqltypes=?, lastUpdate=? WHERE id = ?";
-
-    PreparedStatement stmt = co.prepareStatement(updateQuery);
-    setParameters(stmt, true);
-    stmt.execute();
-
-    if (stmt.getUpdateCount() != 0) {
-      stmt.close();
-      return false;
-    }
-    stmt.close();
-
-    String insertQuery = "INSERT INTO piece (name, schema, category, label1, label2, label3, " +
-      "tags, state, target, rows, size, columns, hivetypes, sqltypes, created, lastUpdate, id) " +
-      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-    stmt = co.prepareStatement(insertQuery);
-    setParameters(stmt, false);
-    stmt.execute();
-    stmt.close();
-    return true;
-  }
-
-
-  private void setParameters(PreparedStatement ps, boolean update) throws SQLException {
-    int o = 0;
-    ps.setString(++o, name);
-    ps.setString(++o, schema);
-    ps.setString(++o, category);
-
-    ps.setString(++o, label1);
-    ps.setString(++o, label2);
-    ps.setString(++o, label3);
-
-    ps.setString(++o, tags);
-    ps.setString(++o, state);
-    ps.setString(++o, target);
-
-    ps.setInt(++o, rows);
-    ps.setLong(++o, size);
-
-    ps.setString(++o, columns);
-    ps.setString(++o, hivetypes);
-    ps.setString(++o, sqltypes);
-
-    if (!update)
-      ps.setTimestamp(++o, created);
-    ps.setTimestamp(++o, lastUpdate);
-
-    ps.setString(++o, id);
-  }
-
 
   public void loadFromResultSet(ResultSet rs) throws SQLException {
     int o = 0;
