@@ -10,6 +10,7 @@
   <packaging>jar</packaging>
 
   <repositories>
+    <!--
     <repository>
       <id>repo.cloudera.com</id>
       <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
@@ -17,6 +18,7 @@
         <enabled>false</enabled>
       </snapshots>
     </repository>
+    -->
 
     <repository>
       <id>repo.datanucleus.org</id>
@@ -26,6 +28,10 @@
       </snapshots>
     </repository>
   </repositories>
+
+  <properties>
+    <hadoop.version>2.0.0-alpha</hadoop.version>
+  </properties>
 
   <build>
     <plugins>
@@ -102,6 +108,7 @@
       <version>1.2</version>
     </dependency>
 
+    <!--
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-core</artifactId>
@@ -113,6 +120,25 @@
           <artifactId>hsqldb</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    -->
+
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-mapreduce-client-core</artifactId>
+      <version>${hadoop.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.jersey.jersey-test-framework</groupId>
+          <artifactId>jersey-test-framework-grizzly2</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>${hadoop.version}</version>
     </dependency>
 
     <dependency>

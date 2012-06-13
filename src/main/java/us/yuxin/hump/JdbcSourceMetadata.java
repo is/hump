@@ -8,8 +8,8 @@ import java.util.Properties;
 
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.thirdparty.guava.common.base.Joiner;
-import org.apache.hadoop.thirdparty.guava.common.collect.ImmutableMap;
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
 
 public class JdbcSourceMetadata {
   public int columnCount;
