@@ -18,7 +18,7 @@ import us.yuxin.hump.io.SymlinkRCFileInputFormat;
 import us.yuxin.hump.meta.MetaStore;
 import us.yuxin.hump.meta.entity.Piece;
 
-public class Meta {
+public class Main {
   CommandLine cmdline;
   Options options;
 
@@ -49,7 +49,7 @@ public class Meta {
 
 
   public static void main(String argv[]) throws Exception {
-    Meta app = new Meta();
+    Main app = new Main();
     app.run(argv);
   }
 

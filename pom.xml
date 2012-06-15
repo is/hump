@@ -83,7 +83,7 @@
               <addClasspath>true</addClasspath>
               <classpathPrefix>lib</classpathPrefix>
               <classpathLayoutType>repository</classpathLayoutType>
-              <mainClass>us.yuxin.hump.cli.Meta</mainClass>
+              <mainClass>us.yuxin.hump.cli.Main</mainClass>
             </manifest>
             <manifestEntries>
               <Class-Path>. conf</Class-Path>
