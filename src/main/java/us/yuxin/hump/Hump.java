@@ -174,9 +174,9 @@ public class Hump extends Configured implements Tool {
     }
     fs.close();
 
-    conf.set("mapreduce.job.name", "Hump-" + Long.toString(System.currentTimeMillis()));
+
     Job job = Job.getInstance(conf);
-    // job.setJobName("Hump-" + Long.toString(System.currentTimeMillis()));
+    job.setJobName("Hump-" + Long.toString(System.currentTimeMillis()));
     job.setJarByClass(HumpMapper.class);
     job.setMapperClass(HumpMapper.class);
 
