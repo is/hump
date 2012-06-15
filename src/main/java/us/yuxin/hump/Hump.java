@@ -154,7 +154,7 @@ public class Hump extends Configured implements Tool {
     try {
       collectorThread.join();
     } catch (InterruptedException e) {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      e.printStackTrace();
     }
   }
 
@@ -169,12 +169,12 @@ public class Hump extends Configured implements Tool {
 
     for (FileStatus fileStatus : fileStatuses) {
       if (fileStatus.getPath().toString().endsWith(".jar")) {
-        DistributedCache.addArchiveToClassPath(fileStatus.getPath(), conf);
+        DistributedCache.addArchiveToClassPath(fileStatus.getPath(), conf, fs);
       }
     }
     fs.close();
 
-    Job job = new Job(conf);
+    Job job = Job.getInstance(conf);
 
     job.setJobName("Hump-" + Long.toString(System.currentTimeMillis()));
     job.setJarByClass(HumpMapper.class);
