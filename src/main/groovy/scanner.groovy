@@ -1,9 +1,12 @@
 @Grab(group='org.codehaus.gpars', module='gpars', version='0.12')
+@GrabConfig(systemClassLoader=true)
+@Grab(group='mysql', module='mysql-connector-java', version='5.1.19')
 
 import groovyx.gpars.GParsPool
-import groovyx.gpars.ParallelEnhancer
+// import groovyx.gpars.ParallelEnhancer
 import groovy.sql.Sql
 import groovy.transform.Field
+
 
 @Field
 def LogDBNameMap = ['rrwar': 'tr_log', 'rrlstx': 'sg2_log', ]
@@ -15,6 +18,7 @@ Properties conf = new Properties()
 new File(".scanner.properties").withInputStream {
 	stream -> conf.load(stream)
 }
+
 
 
 def getDBEntriesList() {
@@ -39,11 +43,17 @@ def getTablesList(db) {
 		"SELECT TABLE_NAME as name FROM information_schema.TABLES WHERE TABLE_SCHEMA = :logdb",
 		[logdb:logDBName])
 	sql.close()
-	return rows
+	return rows.collect { it.db = db; it}
 }
 
-def dbs = getDBEntriesList().findAll {it-> it.gameid == 'rrlstx'}
-println dbs.size()
+def tables
+
+GParsPool.withPool(conf['parallel']) {
+	def dbs = getDBEntriesList().findAll {it.gameid == 'rr'}
+	tables = dbs.collectParallel { getTablesList(it) }
+}
+
+println tables*.size()
 
 //def a = getDBEntriesList().findAll({it -> it.gameid == 'rrwar'})
 //print getTablesList(a[0])
