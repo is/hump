@@ -14,11 +14,12 @@ def LogDBNameMap = ['rrwar': 'tr_log', 'rrlstx': 'sg2_log', ]
 // --- Load configuration from properties file
 @Field
 Properties conf = new Properties()
-
 new File(".scanner.properties").withInputStream {
 	stream -> conf.load(stream)
 }
 
+@Field
+def poolSize = conf.get("parallel", "60").toInteger()
 
 
 def getDBEntriesList() {
@@ -32,31 +33,47 @@ def getDBEntriesList() {
 }
 
 
-def getTablesList(db) {
-	if (!LogDBNameMap.containsKey(db.gameid))
+def getTablesList(ds) {
+	if (!LogDBNameMap.containsKey(ds.gameid))
 		return null;
 
-	String logDBName = LogDBNameMap[db.gameid]
-	String url = "jdbc:mysql://${db.masterdb}:${db.masterport}/information_schema";
-	Sql sql = Sql.newInstance(url, db.user, db.pass)
+	String logDBName = LogDBNameMap[ds.gameid]
+	String url = "jdbc:mysql://${ds.masterdb}:${ds.masterport}/information_schema";
+	Sql sql = Sql.newInstance(url, ds.user, ds.pass)
 	def rows = sql.rows (
 		"SELECT TABLE_NAME as name FROM information_schema.TABLES WHERE TABLE_SCHEMA = :logdb",
 		[logdb:logDBName])
 	sql.close()
-	return rows.collect { it.db = db; it}
+	return rows.collect { it ->
+		it.dbname = logDBName
+		it.ds = ds
+		parseLogTableEntry(it)
+		it
+	}
 }
 
-def tables
 
-GParsPool.withPool(conf['parallel']) {
-	def dbs = getDBEntriesList().findAll {it.gameid == 'rr'}
-	tables = dbs.collectParallel { getTablesList(it) }
+def parseLogTableEntry(ts) {
+	if (ts.name.contains('_log_')) {
+		String[] tokens = ts.name.split('_log_', 2)
+		ts.prefix = tokens[0]
+		ts.postfix = tokens[1]
+		ts.date = ts.postfix.replace('_', '')
+		ts.isLog = true
+	} else {
+		ts.isLog = false
+	}
 }
 
-println tables*.size()
 
-//def a = getDBEntriesList().findAll({it -> it.gameid == 'rrwar'})
-//print getTablesList(a[0])
-//def list = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-//ParallelEnhancer.enhanceInstance list
-//println list.collectParallel {it * 2}
+def dbs = getDBEntriesList().findAll {it.gameid == 'rrwar'}
+def res = null
+
+GParsPool.withPool(poolSize) {
+	dbs.makeConcurrent()
+	res = dbs.collect { getTablesList(it) }
+	dbs.makeSequential()
+}
+
+println res*.size()
+println res[0][0]
