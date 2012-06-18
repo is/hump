@@ -6,9 +6,10 @@
 import groovy.json.JsonBuilder
 import groovy.sql.Sql
 import groovy.transform.Field
+import groovy.util.CliBuilder
 
 import groovyx.gpars.GParsPool
-// import groovyx.gpars.ParallelEnhancer
+import groovyjarjarcommonscli.Options
 
 @Field
 def LogDBNameMap = ['rrwar': 'tr_log', 'rrlstx': 'sg2_log', ]
@@ -93,7 +94,32 @@ def writeTableToLineJson(Writer writer, entries) {
 	}
 }
 
-def dbs = getDBEntriesList().findAll {it.gameid == 'rrwar'}
+
+CliBuilder cli =  new CliBuilder(usage: 'scanner.groovy [options]', header: 'Options')
+cli.o(longOpt: 'output', args:1, argName:'filename', 'Output files, default is hump-task.ajs')
+cli.b(longOpt: 'begin', args:1, argName: 'date', 'Begin of date range')
+cli.e(longOpt: 'end', args:1, argName: 'date', 'End of date range')
+cli.d(longOpt: 'day', args:1, argName: 'date', 'One day range')
+cli.P(longOpt: 'parallel', args:1, argName: 'num', 'Parallel task number')
+cli.h(longOpt: 'help', 'Show usage information and quit')
+
+OptionAccessor options = cli.parse(args)
+
+if (options.h) {
+	cli.usage()
+	System.exit(0)
+}
+
+String outputFilename = 'hump-task.ajs'
+if (optoins.o) {
+	outputFilename = options.o
+}
+if (options.P) {
+	poolSize = options.P.toInteger()
+}
+
+
+def dbs = getDBEntriesList()
 def res = null
 
 GParsPool.withPool(poolSize) {
@@ -105,7 +131,7 @@ println res.size()
 println res*.size()
 println res[0][0]
 
-new File("hump-task.ajs").withWriter {writer ->
+new File(outputFilename).withWriter {writer ->
 	res.each { it ->
 		writeTableToLineJson(writer, it)
 	}
