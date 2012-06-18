@@ -6,7 +6,6 @@
 import groovy.json.JsonBuilder
 import groovy.sql.Sql
 import groovy.transform.Field
-import groovy.util.CliBuilder
 
 import groovyx.gpars.GParsPool
 
@@ -21,13 +20,13 @@ new File(".scanner.properties").withInputStream {
 }
 
 @Field
-def poolSize = conf.get("parallel", "60").toInteger()
+int poolSize = conf.get("parallel", "60").toInteger()
 
 
 def getDBEntriesList() {
 	Sql sql = Sql.newInstance(conf["db.source.url"],
 		conf["db.source.username"], conf["db.source.password"],
-		conf["db.source.driver"])
+		conf["db.source.driver"]) as Sql
 
 	def rows = sql.rows "SELECT * FROM server_list"
 	sql.close()
@@ -41,7 +40,7 @@ def getTablesList(ds) {
 
 	String logDBName = LogDBNameMap[ds.gameid]
 	String url = "jdbc:mysql://${ds.masterdb}:${ds.masterport}/information_schema";
-	Sql sql = Sql.newInstance(url, ds.user, ds.pass)
+	Sql sql = Sql.newInstance(url, ds.user, ds.pass) as Sql
 
 	String dateStr = conf.get('date')
 
