@@ -43,7 +43,6 @@ def getTablesList(ds) {
 	Sql sql = Sql.newInstance(url, ds.user, ds.pass) as Sql
 
 	String dateStr = conf.get('date')
-
 	String query = null;
 
 	if (dateStr == null) {
@@ -141,7 +140,7 @@ def dbs = getDBEntriesList()
 def res = null
 
 GParsPool.withPool(poolSize) {
-	res = dbs.collectParallel { getTablesList(it) }
+	res = dbs.collectParallel { getTablesList(it) }.grep { it != null && it.size() > 0}
 }
 
 
