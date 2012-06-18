@@ -9,7 +9,6 @@ import groovy.transform.Field
 import groovy.util.CliBuilder
 
 import groovyx.gpars.GParsPool
-import groovyjarjarcommonscli.Options
 
 @Field
 def LogDBNameMap = ['rrwar': 'tr_log', 'rrlstx': 'sg2_log', ]
@@ -43,9 +42,25 @@ def getTablesList(ds) {
 	String logDBName = LogDBNameMap[ds.gameid]
 	String url = "jdbc:mysql://${ds.masterdb}:${ds.masterport}/information_schema";
 	Sql sql = Sql.newInstance(url, ds.user, ds.pass)
-	def rows = sql.rows (
-		"SELECT TABLE_NAME as name FROM information_schema.TABLES WHERE TABLE_SCHEMA = :logdb",
-		[logdb:logDBName])
+
+	String dateStr = conf.get('date')
+
+	String query = null;
+
+	if (dateStr == null) {
+		query = "SELECT TABLE_NAME as name FROM information_schema.TABLES WHERE TABLE_SCHEMA = :logdb"
+	} else if (dateStr.length() == 8) {
+		dateStr2 = dateStr[0,1,2,3] + "_" + dateStr[4, 5] + "_" + dateStr[6, 7]
+
+		query = "SELECT TABLE_NAME as name FROM  information_schema.TABLES WHERE TABLE_SCHEMA = :logdb AND " +
+			"(TABLE_NAME LIKE '%_${dateStr}' OR TABLE_NAME LIKE '%_${dateStr2}')"
+	} else if (dateStr.length() == 6) {
+		dateStr2 = dateStr[0,1,2,3] + "_" + dateStr[4, 5]
+		query = "SELECT TABLE_NAME as name FROM  information_schema.TABLES WHERE TABLE_SCHEMA = :logdb AND " +
+			"(TABLE_NAME LIKE '%_${dateStr}%' OR TABLE_NAME LIKE '%_${dateStr2}_%')"
+	}
+
+	def rows = sql.rows (query, [logdb:logDBName])
 	sql.close()
 	return rows.collect { it ->
 		it.dbname = logDBName
@@ -111,11 +126,15 @@ if (options.h) {
 }
 
 String outputFilename = 'hump-task.ajs'
-if (optoins.o) {
+if (options.o) {
 	outputFilename = options.o
 }
 if (options.P) {
 	poolSize = options.P.toInteger()
+}
+
+if (options.d) {
+	conf['date'] = options.d
 }
 
 
@@ -129,7 +148,7 @@ GParsPool.withPool(poolSize) {
 
 println res.size()
 println res*.size()
-println res[0][0]
+println res.find {it != null && it.size != 0}[0]
 
 new File(outputFilename).withWriter {writer ->
 	res.each { it ->
