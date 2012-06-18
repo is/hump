@@ -2,11 +2,13 @@
 @GrabConfig(systemClassLoader=true)
 @Grab(group='mysql', module='mysql-connector-java', version='5.1.19')
 
-import groovyx.gpars.GParsPool
-// import groovyx.gpars.ParallelEnhancer
+
+import groovy.json.JsonBuilder
 import groovy.sql.Sql
 import groovy.transform.Field
 
+import groovyx.gpars.GParsPool
+// import groovyx.gpars.ParallelEnhancer
 
 @Field
 def LogDBNameMap = ['rrwar': 'tr_log', 'rrlstx': 'sg2_log', ]
@@ -66,6 +68,26 @@ def parseLogTableEntry(ts) {
 }
 
 
+def writeTableToLineJson(Writer writer, entries) {
+	if (entries == null)
+		return
+	if (entries.size() == 0)
+		return
+
+	entries.each { i ->
+		JsonBuilder json = new JsonBuilder()
+		json {
+			username i.ds.username
+			password i.ds.password
+			type "mysql"
+			host "${i.ds.host}:${i.ds.port}"
+			target "/z0/hump/log/${i.ds.gameid}/${i.prefix}/_${i.date}/${i.ds.sid}.rcfile"
+			id "log.${i.ds.gameid}.${i.prefix}.${i.ds.sid}.${$i.date}"
+		}
+		writer.write(json.toString())
+	}
+}
+
 def dbs = getDBEntriesList().findAll {it.gameid == 'rrwar'}
 def res = null
 
@@ -77,3 +99,11 @@ GParsPool.withPool(poolSize) {
 
 println res*.size()
 println res[0][0]
+
+new File("hump-task.ajs").withWriter {writer ->
+	res.each { it ->
+		writeTableToLineJson(writer, it)
+	}
+}
+
+// vim: ts=2 sts=2 ai
