@@ -74,17 +74,22 @@ def writeTableToLineJson(Writer writer, entries) {
 	if (entries.size() == 0)
 		return
 
+
+	JsonBuilder json = new JsonBuilder()
 	entries.each { i ->
-		JsonBuilder json = new JsonBuilder()
+		if (!i.isLog)
+			return
+
 		json {
-			username i.ds.username
-			password i.ds.password
+			username i.ds.user
+			password i.ds.pass
 			type "mysql"
-			host "${i.ds.host}:${i.ds.port}"
-			target "/z0/hump/log/${i.ds.gameid}/${i.prefix}/_${i.date}/${i.ds.sid}.rcfile"
-			id "log.${i.ds.gameid}.${i.prefix}.${i.ds.sid}.${$i.date}"
+			host "${i.ds.masterdb}:${i.ds.masterport}"
+			target "/z0/hump/log/${i.ds.gameid}/${i.prefix}/_${i.date}/${i.ds.sname}_${i.ds.sid}.rcfile"
+			id "log.${i.ds.gameid}.${i.prefix}.${i.ds.sname}.${i.date}"
 		}
 		writer.write(json.toString())
+		writer.write("\n")
 	}
 }
 
@@ -92,11 +97,11 @@ def dbs = getDBEntriesList().findAll {it.gameid == 'rrwar'}
 def res = null
 
 GParsPool.withPool(poolSize) {
-	dbs.makeConcurrent()
-	res = dbs.collect { getTablesList(it) }
-	dbs.makeSequential()
+	res = dbs.collectParallel { getTablesList(it) }
 }
 
+
+println res.size()
 println res*.size()
 println res[0][0]
 
