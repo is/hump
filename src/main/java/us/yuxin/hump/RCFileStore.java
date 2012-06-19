@@ -19,39 +19,22 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.CompressionCodec;
 
 
-public class RCFileStore implements Store {
+public class RCFileStore extends StoreBase {
   public final String NULL_STRING = "NULL";
-
-  FileSystem fs;
-  Configuration conf;
-  CompressionCodec codec;
-  StoreCounter counter;
-
-  boolean useTemporary;
-
-  Path lastRealPath;
-  Path lastTempPath;
 
 
   public RCFileStore(FileSystem fs, Configuration conf, CompressionCodec codec) {
-    this.fs = fs;
-    this.conf = conf;
-    this.codec = codec;
-    this.counter = new StoreCounter();
-    this.useTemporary = true;
+    super(fs, conf, codec);
   }
 
 
+  @Override
   public void setUseTemporary(boolean useTemporary) {
     this.useTemporary = useTemporary;
   }
 
 
-  public void store(Path file, JdbcSource source, Properties prop) throws IOException {
-    store(file, source, prop, null);
-  }
-
-
+  @Override
   public void store(Path file, JdbcSource source, Properties prop, StoreCounter counter) throws IOException {
     if (source == null || !source.isReady()) {
       throw new IOException("JDBC Source is not ready");
@@ -79,8 +62,8 @@ public class RCFileStore implements Store {
     if (useTemporary) {
       lastTempPath = new Path("/tmp/hump-" +
         conf.get("user.name", "hadoop") + "/" +
-        lastRealPath.toString().replaceAll("/", "__"));
-      file = lastTempPath;
+        getLastRealPath().toString().replaceAll("/", "__"));
+      file = getLastTempPath();
     }
 
     // Set dump object if counter is null
@@ -117,8 +100,8 @@ public class RCFileStore implements Store {
     counter.outBytes = fs.getFileStatus(file).getLen();
 
     if (useTemporary) {
-      fs.mkdirs(lastRealPath.getParent());
-      fs.rename(lastTempPath, lastRealPath);
+      fs.mkdirs(getLastRealPath().getParent());
+      fs.rename(getLastTempPath(), getLastRealPath());
     }
   }
 
@@ -161,12 +144,7 @@ public class RCFileStore implements Store {
   }
 
 
-  public Path getLastRealPath() {
-    return lastRealPath;
-  }
-
-
-  public Path getLastTempPath() {
-    return lastTempPath;
+  public String getFormatId() {
+    return "rcfile";
   }
 }
