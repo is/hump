@@ -208,6 +208,9 @@ public class HumpDumpExecutor implements HumpExecutor {
 
     task = mapper.readValue(taskInfo.toString(), JsonNode.class);
     target = task.get("target").getTextValue();
+    if (target.indexOf(0) != '/') {
+      target = conf.get(Hump.CONF_HUMP_OUTPUT_BASEPATH, "") + "/" + target;
+    }
 
     if (humpUpdate) {
       if (isTargetExist()) {

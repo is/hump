@@ -51,4 +51,9 @@
     <name>hump.output.format</name>
     <value>rcfile</value>
   </property>
+
+  <property>
+    <name>hump.output.basepath</name>
+    <value>/z0/hump</value>
+  </property>
 </configuration>
