@@ -50,9 +50,9 @@ public class Hump extends Configured implements Tool {
   public static final String CONF_HUMP_RESULT_FAILURE = "hump.result.failure";
   public static final String CONF_HUMP_UPDATE = "hump.update";
   public static final String CONF_HUMP_DUMP_DIRECT = "hump.dump.direct";
-
   public static final String CONF_HUMP_PATH_TASKFILE = "hump.path.taskfile";
   public static final String CONF_HUMP_PATH_JAR = "hump.path.jar";
+  public static final String CONF_HUMP_OUTOUT_FORMAT = "hump.output.format";
 
   public static final int RETCODE_ERROR = 0;
   public static final int RETCODE_OK = 1;

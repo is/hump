@@ -21,9 +21,10 @@ import org.codehaus.jackson.node.ObjectNode;
 
 public class HumpDumpExecutor implements HumpExecutor {
   FileSystem fs;
-  RCFileStore store;
+  Store store;
   CompressionCodec codec;
   String codecExtension;
+  String formatExtension;
   Configuration conf;
 
   BlockingQueue<String> feedbackQueue;
@@ -87,8 +88,15 @@ public class HumpDumpExecutor implements HumpExecutor {
     }
 
     humpUpdate = conf.getBoolean(Hump.CONF_HUMP_UPDATE, false);
-    store = new RCFileStore(fs, conf, codec);
 
+    String outputFormat = conf.get(Hump.CONF_HUMP_OUTOUT_FORMAT);
+    if (outputFormat.equals("text")) {
+      store = new TextStore(fs, conf, codec);
+    } else {
+      store = new RCFileStore(fs, conf, codec);
+    }
+
+    formatExtension = "." + store.getFormatId();
     store.setUseTemporary(!conf.getBoolean(Hump.CONF_HUMP_DUMP_DIRECT, false));
 
     globalCounter = new StoreCounter();

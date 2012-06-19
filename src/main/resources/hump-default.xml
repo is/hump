@@ -47,4 +47,8 @@
 		<value>true</value>
 	</property>
 
+  <property>
+    <name>hump.output.format</name>
+    <value>rcfile</value>
+  </property>
 </configuration>
