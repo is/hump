@@ -273,6 +273,7 @@ public class HumpDumpExecutor implements HumpExecutor {
       feed.put("during", singleCounter.during);
       feed.put("columns", metadata.columnNames);
       feed.put("columnTypes", metadata.columnHiveTypes);
+      feed.put("format", store.getFormatId());
     }
     feedbackQueue.offer(mapper.writeValueAsString(feed));
   }

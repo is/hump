@@ -40,4 +40,22 @@ public abstract class StoreBase implements Store {
   public void store(Path file, JdbcSource source, Properties prop) throws IOException {
     store(file, source, prop, null);
   }
+
+  @Override
+  public void setUseTemporary(boolean useTemporary) {
+    this.useTemporary = useTemporary;
+  }
+
+  protected Path genTempPath() {
+    lastTempPath = new Path("/tmp/hump-" +
+      conf.get("user.name", "hadoop") + "/" +
+      getLastRealPath().toString().replaceAll("/", "__"));
+
+    return lastTempPath;
+  }
+
+
+  public void setLastRealPath(Path lastRealPath) {
+    this.lastRealPath = lastRealPath;
+  }
 }

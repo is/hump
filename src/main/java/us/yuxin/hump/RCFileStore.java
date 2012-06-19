@@ -29,12 +29,6 @@ public class RCFileStore extends StoreBase {
 
 
   @Override
-  public void setUseTemporary(boolean useTemporary) {
-    this.useTemporary = useTemporary;
-  }
-
-
-  @Override
   public void store(Path file, JdbcSource source, Properties prop, StoreCounter counter) throws IOException {
     if (source == null || !source.isReady()) {
       throw new IOException("JDBC Source is not ready");
@@ -57,13 +51,10 @@ public class RCFileStore extends StoreBase {
     if (codec != null) {
       file = new Path(file.toString() + codec.getDefaultExtension());
     }
-    lastRealPath = file;
+    setLastRealPath(file);
 
     if (useTemporary) {
-      lastTempPath = new Path("/tmp/hump-" +
-        conf.get("user.name", "hadoop") + "/" +
-        getLastRealPath().toString().replaceAll("/", "__"));
-      file = getLastTempPath();
+      file = genTempPath();
     }
 
     // Set dump object if counter is null
