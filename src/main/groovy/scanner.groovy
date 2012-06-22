@@ -110,6 +110,7 @@ def writeTableToLineJson(Writer writer, entries) {
 			password i.ds.pass
 			type "mysql"
 			host "${i.ds.host}:${i.ds.port}"
+			db i.dbname
 			target i.target
 			id i.id
 		}
@@ -150,7 +151,7 @@ if (options.h) {
 }
 
 
-String outputFilename = 'hump-task.ajs'
+String outputFilename = 'hump-tasks.ajs'
 String runMode = "log"
 
 if (options.m) {
