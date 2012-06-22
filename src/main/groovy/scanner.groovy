@@ -111,6 +111,7 @@ def writeTableToLineJson(Writer writer, entries) {
 			type "mysql"
 			host "${i.ds.host}:${i.ds.port}"
 			db i.dbname
+			table i.name
 			target i.target
 			id i.id
 		}
