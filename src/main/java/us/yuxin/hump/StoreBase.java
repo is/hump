@@ -50,7 +50,7 @@ public abstract class StoreBase implements Store {
   protected Path genTempPath() {
     lastTempPath = new Path("/tmp/hump-" +
       conf.get(MRJobConfig.USER_NAME, "hadoop") + "/" +
-      conf.get(MRJobConfig.APPLICATION_ATTEMPT_ID) +
+      conf.get(MRJobConfig.JOB_NAME) +
       getLastRealPath().toString().replaceAll("/", "__"));
 
     return lastTempPath;

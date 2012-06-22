@@ -13,6 +13,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -74,17 +75,12 @@ public class HumpDumpExecutor implements HumpExecutor {
     fs = FileSystem.get(context.getConfiguration());
     codec = null;
 
+
     if (conf.get(Hump.CONF_HUMP_COMPRESSION_CODEC) != null) {
-      try {
-        codec = (CompressionCodec) conf.getClass(Hump.CONF_HUMP_COMPRESSION_CODEC, null).newInstance();
-        codecExtension = codec.getDefaultExtension();
-      } catch (InstantiationException e) {
-        e.printStackTrace();
-        throw new IOException("Invalid compression codec", e);
-      } catch (IllegalAccessException e) {
-        e.printStackTrace();
-        throw new IOException("Invalid compression codec", e);
-      }
+      CompressionCodecFactory ccf = new CompressionCodecFactory(conf);
+
+      codec = ccf.getCodecByClassName(Hump.CONF_HUMP_COMPRESSION_CODEC);
+      codecExtension = codec.getDefaultExtension();
     }
 
     humpUpdate = conf.getBoolean(Hump.CONF_HUMP_UPDATE, false);
