@@ -48,9 +48,10 @@ public class RCFileStore extends StoreBase {
 
     SequenceFile.Metadata metadata = createRCFileMetadata(jdbcMetadata, prop);
 
-    if (codec != null) {
-      file = new Path(file.toString() + codec.getDefaultExtension());
-    }
+    // if (codec != null) {
+    //   file = new Path(file.toString() + codec.getDefaultExtension());
+    // }
+
     setLastRealPath(file);
 
     if (useTemporary) {

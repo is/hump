@@ -183,7 +183,7 @@ public class HumpDumpExecutor implements HumpExecutor {
       metadata = new JdbcSourceMetadata();
       metadata.setJdbcSource(source);
 
-      store.store(new Path(target), source, null, singleCounter);
+      store.store(new Path(realTarget), source, null, singleCounter);
       source.close();
 
     } catch (SQLException e) {
