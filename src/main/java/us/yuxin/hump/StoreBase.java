@@ -7,6 +7,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.mapreduce.MRJobConfig;
 
 public abstract class StoreBase implements Store {
 
@@ -48,7 +49,8 @@ public abstract class StoreBase implements Store {
 
   protected Path genTempPath() {
     lastTempPath = new Path("/tmp/hump-" +
-      conf.get("user.name", "hadoop") + "/" +
+      conf.get(MRJobConfig.USER_NAME, "hadoop") + "/" +
+      conf.get(MRJobConfig.APPLICATION_ATTEMPT_ID) +
       getLastRealPath().toString().replaceAll("/", "__"));
 
     return lastTempPath;

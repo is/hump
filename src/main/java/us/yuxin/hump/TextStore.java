@@ -45,6 +45,7 @@ public class TextStore extends StoreBase {
     int columns = jdbcMetadata.getColumnCount();
     ResultSet rs = source.getResultSet();
 
+    System.out.println("TextStore: filename=" + file.toString());
     OutputStream outs = fs.create(file);
     if (codec != null) {
       outs = codec.createOutputStream(outs);
