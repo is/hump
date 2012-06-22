@@ -59,7 +59,7 @@ def getLogTablesList(ds) {
 			it.prefix = tokens[0]
 			it.postfix = tokens[1]
 			it.date = it.postfix.replace('_', '')
-			it.target = "${it.ds.gameid}/${it.prefix}/${it.date}/${it.ds.sname}__${i.ds.sid}"
+			it.target = "${it.ds.gameid}/${it.prefix}/${it.date}/${it.ds.sname}__${it.ds.sid}"
 			it.id = "log.${it.ds.gameid}.${it.prefix}.${it.ds.sname}.${it.date}"
 			it.isValid = true
 		} else {
