@@ -207,10 +207,7 @@ public class HumpDumpExecutor implements HumpExecutor {
     taskBeginTime = System.currentTimeMillis();
 
     task = mapper.readValue(taskInfo.toString(), JsonNode.class);
-    target = task.get("target").getTextValue();
-    if (target.indexOf(0) != '/') {
-      target = conf.get(Hump.CONF_HUMP_OUTPUT_BASEPATH, "") + "/" + target;
-    }
+    setTarget(task.get("target").getTextValue());
 
     if (humpUpdate) {
       if (isTargetExist()) {
@@ -240,11 +237,24 @@ public class HumpDumpExecutor implements HumpExecutor {
     feedback();
   }
 
-  private boolean isTargetExist() throws IOException {
-    realTarget = target + formatExtension;
+
+  private void setTarget(String target) {
+    this.target = target;
+
+    if (this.target.indexOf(0) != '/') {
+      this.target = conf.get(Hump.CONF_HUMP_OUTPUT_BASEPATH, "") + "/" + target;
+    } else {
+      this.target = target;
+    }
+
+
+    realTarget = this.target + formatExtension;
     if (codec != null)
       realTarget = realTarget + codecExtension;
+  }
 
+
+  private boolean isTargetExist() throws IOException {
     return fs.exists(new Path(realTarget));
   }
 
