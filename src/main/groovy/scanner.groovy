@@ -80,7 +80,6 @@ def getZ0TableList() {
 
 	return getMysqlTableList(db, conf['z0.db']) { it ->
 		String tablename = it['name'] as String
-		println tablename
 		if (tablename =~ /_\d{8}$/) {
 			it.prefix = tablename[0..-10]
 			it.date = tablename[-8..-1]
@@ -172,11 +171,13 @@ if (options.d) {
 def res = null
 
 if (runMode == 'log') {
+	println "Running in SCAN LOG DB mode."
 	def dbs = getDBEntriesList()
 	GParsPool.withPool(poolSize) {
 		res = dbs.collectParallel { getLogTableList(it) }.grep { it != null && it.size() > 0}
 	}
 } else if (runMode == 'z0') {
+	println "Running in Z0 mode."
 	res = [getZ0TableList(),]
 }
 
