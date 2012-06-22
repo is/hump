@@ -12,14 +12,17 @@ def getDBEntriesList() {
 
 	def rows = sql.rows "SELECT * FROM server_list"
 	sql.close()
-	return rows
+	return rows.collect { it->
+		it.host = it.masterdb
+		it.port = it.masterport
+		it
+	}
 }
 
 
 List getMysqlTableList(Map ds, String dbname, Closure revise) {
-	String url = "jdbc:mysql://${ds.masterdb}:${ds.masterport}/information_schema";
+	String url = "jdbc:mysql://${ds.host}:${ds.port}/information_schema";
 	Sql sql = Sql.newInstance(url, ds.user, ds.pass) as Sql
-
 	String dateStr = conf.get('date')
 	String query = null;
 
@@ -49,7 +52,7 @@ List getMysqlTableList(Map ds, String dbname, Closure revise) {
 }
 
 
-def getLogTablesList(ds) {
+def getLogTableList(ds) {
 	if (!LogDBNameMap.containsKey(ds.gameid))
 		return null;
 	String logDBName = LogDBNameMap[ds.gameid]
@@ -65,6 +68,23 @@ def getLogTablesList(ds) {
 		} else {
 			it.isValid = false
 		}
+	}
+}
+
+
+def getZ0TableList() {
+	def db = [
+		host: conf['z0.host'], port: conf['z0.port'],
+		user: conf['z0.user'], pass: conf['z0.pass'],
+	]
+
+	return getTablesList(db, conf['z0.db']) { it ->
+		String tablename = it['name'] as String
+		it.prefix = tablename[0..-10]
+		it.date = tablename[-9..-1]
+		it.target = "account/${it.prefix}/${it.date}"
+		it.id = "account.main.${it.prefix}.z0.${it.date}"
+		it.isValid = true
 	}
 }
 
@@ -85,7 +105,7 @@ def writeTableToLineJson(Writer writer, entries) {
 			username i.ds.user
 			password i.ds.pass
 			type "mysql"
-			host "${i.ds.masterdb}:${i.ds.masterport}"
+			host "${i.ds.host}:${i.ds.port}"
 			target i.target
 			id i.id
 		}
@@ -109,12 +129,14 @@ new File(".scanner.properties").withInputStream {
 int poolSize = conf.get("parallel", "60").toInteger()
 
 CliBuilder cli = new CliBuilder(usage: 'scanner.groovy [options]', header: 'Options')
+cli.m(longOpt: 'mode', args: 1, argName: 'mode', 'Set scanner runmode')
 cli.o(longOpt: 'output', args: 1, argName: 'filename', 'Output files, default is hump-task.ajs')
 cli.b(longOpt: 'begin', args: 1, argName: 'date', 'Begin of date range')
 cli.e(longOpt: 'end', args: 1, argName: 'date', 'End of date range')
 cli.d(longOpt: 'day', args: 1, argName: 'date', 'One day range')
 cli.P(longOpt: 'parallel', args: 1, argName: 'num', 'Parallel task number')
 cli.h(longOpt: 'help', 'Show usage information and quit')
+
 
 OptionAccessor options = cli.parse(args)
 
@@ -123,7 +145,13 @@ if (options.h) {
 	System.exit(0)
 }
 
+
 String outputFilename = 'hump-task.ajs'
+String runMode = "log"
+
+if (options.m) {
+	runMode = options.m
+}
 if (options.o) {
 	outputFilename = options.o
 }
@@ -136,13 +164,16 @@ if (options.d) {
 }
 
 
-def dbs = getDBEntriesList()
 def res = null
 
-GParsPool.withPool(poolSize) {
-	res = dbs.collectParallel { getLogTablesList(it) }.grep { it != null && it.size() > 0}
+if (runMode == 'log') {
+	def dbs = getDBEntriesList()
+	GParsPool.withPool(poolSize) {
+		res = dbs.collectParallel { getLogTableList(it) }.grep { it != null && it.size() > 0}
+	}
+} else if (runMode == 'z0') {
+	res = getZ0TableList()
 }
-
 
 println res.size()
 println res*.size()
