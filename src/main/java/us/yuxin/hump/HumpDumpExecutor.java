@@ -241,11 +241,9 @@ public class HumpDumpExecutor implements HumpExecutor {
   }
 
   private boolean isTargetExist() throws IOException {
-    if (codec != null) {
-      realTarget = target + codecExtension;
-    } else {
-      realTarget = target;
-    }
+    realTarget = target + formatExtension;
+    if (codec != null)
+      realTarget = realTarget + codecExtension;
 
     return fs.exists(new Path(realTarget));
   }
@@ -257,7 +255,8 @@ public class HumpDumpExecutor implements HumpExecutor {
     feed.put("id", id);
     feed.put("name", name);
     feed.put("beginTime", new SimpleDateFormat("yyyyMMdd.HHmmss").format(new Date(taskBeginTime)));
-    feed.put("target", task.get("target").getTextValue());
+    feed.put("target", task.get("target"));
+    feed.put("path", realTarget);
     if (codec != null) {
       feed.put("cext", codecExtension);
     }
