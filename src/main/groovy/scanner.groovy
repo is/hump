@@ -53,15 +53,17 @@ def getLogTablesList(ds) {
 	if (!LogDBNameMap.containsKey(ds.gameid))
 		return null;
 	String logDBName = LogDBNameMap[ds.gameid]
-	return getMysqlTableList(ds, logDBName) {ts ->
-		if (ts.name.contains('_log_')) {
-			String[] tokens = (ts.name as String).split('_log_', 2)
-			ts.prefix = tokens[0]
-			ts.postfix = tokens[1]
-			ts.date = ts.postfix.replace('_', '')
-			ts.isValid = true
+	return getMysqlTableList(ds, logDBName) {it ->
+		if (it.name.contains('_log_')) {
+			String[] tokens = (it.name as String).split('_log_', 2)
+			it.prefix = tokens[0]
+			it.postfix = tokens[1]
+			it.date = it.postfix.replace('_', '')
+			it.target = "${it.ds.gameid}/${it.prefix}/${it.date}/${it.ds.sname}__${i.ds.sid}"
+			it.id = "log.${it.ds.gameid}.${it.prefix}.${it.ds.sname}.${it.date}"
+			it.isValid = true
 		} else {
-			ts.isValid = false
+			it.isValid = false
 		}
 	}
 }
@@ -84,8 +86,8 @@ def writeTableToLineJson(Writer writer, entries) {
 			password i.ds.pass
 			type "mysql"
 			host "${i.ds.masterdb}:${i.ds.masterport}"
-			target "/z0/hump/log/${i.ds.gameid}/${i.prefix}/_${i.date}/${i.ds.sname}_${i.ds.sid}.rcfile"
-			id "log.${i.ds.gameid}.${i.prefix}.${i.ds.sname}.${i.date}"
+			target i.target
+			id i.id
 		}
 		writer.write(json.toString())
 		writer.write("\n")
