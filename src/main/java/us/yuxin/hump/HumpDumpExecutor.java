@@ -77,35 +77,52 @@ public class HumpDumpExecutor implements HumpExecutor {
     codec = null;
 
     if (conf.get(Hump.CONF_HUMP_COMPRESSION_CODEC) != null) {
-      try {
-        codec = (CompressionCodec) conf.getClass(Hump.CONF_HUMP_COMPRESSION_CODEC, null).newInstance();
-        ReflectionUtils.setConf(codec, conf);
-        codecExtension = codec.getDefaultExtension();
-      } catch (InstantiationException e) {
-        e.printStackTrace();
-        throw new IOException("Invalid compression codec", e);
-      } catch (IllegalAccessException e) {
-        e.printStackTrace();
-        throw new IOException("Invalid compression codec", e);
-      }
+      CompressionCodecFactory codecs = new CompressionCodecFactory(conf);
+      codec = codecs.getCodecByClassName(conf.get(Hump.CONF_HUMP_COMPRESSION_CODEC));
+      ReflectionUtils.setConf(codec, conf);
+      codecExtension = codec.getDefaultExtension();
+//      try {
+//        codec = (CompressionCodec) conf.getClass(Hump.CONF_HUMP_COMPRESSION_CODEC, null).newInstance();
+//        ReflectionUtils.setConf(codec, conf);
+//        codecExtension = codec.getDefaultExtension();
+//      } catch (InstantiationException e) {
+//        e.printStackTrace();
+//        throw new IOException("Invalid compression codec", e);
+//      } catch (IllegalAccessException e) {
+//        e.printStackTrace();
+//        throw new IOException("Invalid compression codec", e);
+//      }
     }
 
     humpUpdate = conf.getBoolean(Hump.CONF_HUMP_UPDATE, false);
 
     String outputFormat = conf.get(Hump.CONF_HUMP_OUTOUT_FORMAT);
-    if (outputFormat.equals("text")) {
+    if (outputFormat.equals("text"))
+
+    {
       store = new TextStore(fs, conf, codec);
-    } else {
+    } else
+
+    {
       store = new RCFileStore(fs, conf, codec);
     }
 
     formatExtension = "." + store.getFormatId();
     store.setUseTemporary(!conf.getBoolean(Hump.CONF_HUMP_DUMP_DIRECT, false));
 
-    globalCounter = new StoreCounter();
-    singleCounter = new StoreCounter();
+    globalCounter = new
+
+      StoreCounter();
+
+    singleCounter = new
+
+      StoreCounter();
+
     taskCounter = 0;
-    mapper = new ObjectMapper();
+    mapper = new
+
+      ObjectMapper();
+
   }
 
 
