@@ -12,7 +12,7 @@ def getDBEntriesList() {
 
 	def rows = sql.rows "SELECT * FROM server_list"
 	sql.close()
-	return rows.collect { it->
+	return rows.collect { it ->
 		it.host = it.masterdb
 		it.port = it.masterport
 		it
@@ -78,13 +78,18 @@ def getZ0TableList() {
 		user: conf['z0.user'], pass: conf['z0.pass'],
 	]
 
-	return getTablesList(db, conf['z0.db']) { it ->
+	return getMysqlTableList(db, conf['z0.db']) { it ->
 		String tablename = it['name'] as String
-		it.prefix = tablename[0..-10]
-		it.date = tablename[-9..-1]
-		it.target = "account/${it.prefix}/${it.date}"
-		it.id = "account.main.${it.prefix}.z0.${it.date}"
-		it.isValid = true
+		println tablename
+		if (tablename =~ /_\d{8}$/) {
+			it.prefix = tablename[0..-10]
+			it.date = tablename[-8..-1]
+			it.target = "account/${it.prefix}/${it.date}"
+			it.id = "account.main.${it.prefix}.z0.${it.date}"
+			it.isValid = true
+		} else {
+			it.isValid = false
+		}
 	}
 }
 
@@ -172,12 +177,12 @@ if (runMode == 'log') {
 		res = dbs.collectParallel { getLogTableList(it) }.grep { it != null && it.size() > 0}
 	}
 } else if (runMode == 'z0') {
-	res = getZ0TableList()
+	res = [getZ0TableList(),]
 }
 
 println res.size()
 println res*.size()
-println res.find {it != null && it.size != 0}[0]
+println res.find {it != null && it.size != 0}.find {it.isValid == true}
 
 new File(outputFilename).withWriter {writer ->
 	res.each { it ->
