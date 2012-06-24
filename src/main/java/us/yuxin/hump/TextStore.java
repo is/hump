@@ -12,8 +12,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodec;
 
 public class TextStore extends StoreBase {
-  int rowDelimiter = 1;
-  int fieldDelimiter = '\n';
+  int rowDelimiter = '\n';
+  int fieldDelimiter = '\1';
 
   public TextStore(FileSystem fs, Configuration conf, CompressionCodec codec) {
     super(fs, conf, codec);
