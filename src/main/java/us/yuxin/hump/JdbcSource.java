@@ -9,6 +9,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 public class JdbcSource {
   String driver;
@@ -22,7 +24,7 @@ public class JdbcSource {
   Connection connection;
   Statement statement;
 
-  JdbcSourceMetadata metaData;
+  List<VirtualColumn> virtualColumns;
 
   public JdbcSource() {
   }
@@ -123,7 +125,21 @@ public class JdbcSource {
     return statement;
   }
 
+
   public boolean isReady() {
     return (resultSet != null);
+  }
+
+
+  public List<VirtualColumn> getVirtualColumns() {
+    return virtualColumns;
+  }
+
+
+  public void addVirtualColumn(String name, String type, Object value) {
+    if (virtualColumns == null) {
+      virtualColumns = new ArrayList<VirtualColumn>();
+    }
+    virtualColumns.add(new VirtualColumn(name, type, value));
   }
 }
