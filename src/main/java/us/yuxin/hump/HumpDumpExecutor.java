@@ -81,47 +81,24 @@ public class HumpDumpExecutor implements HumpExecutor {
       codec = codecs.getCodecByClassName(conf.get(Hump.CONF_HUMP_COMPRESSION_CODEC));
       ReflectionUtils.setConf(codec, conf);
       codecExtension = codec.getDefaultExtension();
-//      try {
-//        codec = (CompressionCodec) conf.getClass(Hump.CONF_HUMP_COMPRESSION_CODEC, null).newInstance();
-//        ReflectionUtils.setConf(codec, conf);
-//        codecExtension = codec.getDefaultExtension();
-//      } catch (InstantiationException e) {
-//        e.printStackTrace();
-//        throw new IOException("Invalid compression codec", e);
-//      } catch (IllegalAccessException e) {
-//        e.printStackTrace();
-//        throw new IOException("Invalid compression codec", e);
-//      }
     }
 
     humpUpdate = conf.getBoolean(Hump.CONF_HUMP_UPDATE, false);
 
     String outputFormat = conf.get(Hump.CONF_HUMP_OUTOUT_FORMAT);
-    if (outputFormat.equals("text"))
-
-    {
+    if (outputFormat.equals("text")) {
       store = new TextStore(fs, conf, codec);
-    } else
-
-    {
+    } else {
       store = new RCFileStore(fs, conf, codec);
     }
 
     formatExtension = "." + store.getFormatId();
     store.setUseTemporary(!conf.getBoolean(Hump.CONF_HUMP_DUMP_DIRECT, false));
 
-    globalCounter = new
-
-      StoreCounter();
-
-    singleCounter = new
-
-      StoreCounter();
-
+    globalCounter = new StoreCounter();
+    singleCounter = new StoreCounter();
     taskCounter = 0;
-    mapper = new
-
-      ObjectMapper();
+    mapper = new ObjectMapper();
 
   }
 
@@ -190,6 +167,16 @@ public class HumpDumpExecutor implements HumpExecutor {
     if (task.get("table") != null) {
       String stmt = "SELECT * FROM " + task.get("table").getTextValue();
       source.setQuery(stmt);
+    }
+
+    if (task.get("vc") != null) {
+      JsonNode vcsNode = task.get("vc");
+      for (int i = 0; i < vcsNode.size(); ++i) {
+        JsonNode vcNode = vcsNode.get(i);
+        source.addVirtualColumn(vcNode.get(0).getTextValue(),
+          vcNode.get(1).getTextValue(),
+          vcNode.get(2).getTextValue());
+      }
     }
   }
 
@@ -315,6 +302,11 @@ public class HumpDumpExecutor implements HumpExecutor {
       feed.put("columnTypes", metadata.columnHiveTypes);
       feed.put("format", store.getFormatId());
     }
+
+    if (task.has("vc")) {
+      feed.put("vc", task.get("vc"));
+    }
+
     feedbackQueue.offer(mapper.writeValueAsString(feed));
   }
 

@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Properties;
 
+import com.google.common.collect.Iterables;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -45,6 +47,16 @@ public class TextStore extends StoreBase {
     int columns = jdbcMetadata.getColumnCount();
     ResultSet rs = source.getResultSet();
 
+    List<VirtualColumn> virtualColumnList = source.getVirtualColumns();
+    int virtualColumnCount = 0;
+    VirtualColumn[] virtualColumnArray = null;
+
+    if (virtualColumnList != null) {
+      virtualColumnCount = virtualColumnList.size();
+      virtualColumnArray = Iterables.toArray(virtualColumnList, VirtualColumn.class);
+    }
+
+
     System.out.println("TextStore: filename=" + file.toString());
     OutputStream outs = fs.create(file);
     if (codec != null) {
@@ -72,10 +84,21 @@ public class TextStore extends StoreBase {
             outs.write(bytes);
           }
 
-          if (c == columns)
+          if (c == columns + virtualColumnCount)
             outs.write(rowDelimiter);
           else
             outs.write(fieldDelimiter);
+        }
+
+        if (virtualColumnCount != 0) {
+          for (int c = 0; c < virtualColumnCount; ++c) {
+            outs.write(virtualColumnArray[c].defaultValue.toString().getBytes());
+            if (c == virtualColumnCount - 1) {
+              outs.write(rowDelimiter);
+            } else {
+              outs.write(fieldDelimiter);
+            }
+          }
         }
       }
     } catch (SQLException e) {

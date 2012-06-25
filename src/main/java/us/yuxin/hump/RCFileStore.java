@@ -5,8 +5,10 @@ import java.io.UnsupportedEncodingException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Properties;
 
+import com.google.common.collect.Iterables;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -44,16 +46,20 @@ public class RCFileStore extends StoreBase {
     int columns = jdbcMetadata.getColumnCount();
     int types[] = jdbcMetadata.types;
 
-    RCFileOutputFormat.setColumnNumber(conf, columns);
+    List<VirtualColumn> virtualColumnList = source.getVirtualColumns();
+    int virtualColumnCount = 0;
+    VirtualColumn[] virtualColumnArray = null;
 
-    SequenceFile.Metadata metadata = createRCFileMetadata(jdbcMetadata, prop);
+    if (virtualColumnList != null) {
+      virtualColumnCount = virtualColumnList.size();
+      virtualColumnArray = Iterables.toArray(virtualColumnList, VirtualColumn.class);
+    }
 
-    // if (codec != null) {
-    //   file = new Path(file.toString() + codec.getDefaultExtension());
-    // }
+    RCFileOutputFormat.setColumnNumber(conf, columns + virtualColumnCount);
+    SequenceFile.Metadata metadata = createRCFileMetadata(
+      source, jdbcMetadata, prop);
 
     setLastRealPath(file);
-
     if (useTemporary) {
       file = genTempPath();
     }
@@ -65,7 +71,7 @@ public class RCFileStore extends StoreBase {
 
     RCFile.Writer writer = new RCFile.Writer(fs, conf, file, null, metadata, codec);
     ResultSet rs = source.getResultSet();
-    BytesRefArrayWritable bytes = new BytesRefArrayWritable(columns);
+    BytesRefArrayWritable bytes = new BytesRefArrayWritable(columns + virtualColumnCount);
 
     // TODO Don't break loop while exception threw out.
     // TODO Print whole row data value when an exception raised.
@@ -82,12 +88,21 @@ public class RCFileStore extends StoreBase {
           }
           bytes.set(c, valueToBytesRef(value, types[c], counter));
         }
+
+        if (virtualColumnCount != 0) {
+          for (int c = 0; c < virtualColumnCount; ++c) {
+            byte[] barray = virtualColumnArray[c].defaultValue.toString().getBytes();
+            bytes.set(columns + c, new BytesRefWritable(barray, 0, barray.length));
+          }
+        }
+
         writer.append(bytes);
         bytes.clear();
       }
     } catch (SQLException e) {
       throw new IOException("Failed to fetch data from JDBC source", e);
     }
+
     writer.close();
     counter.outBytes = fs.getFileStatus(file).getLen();
 
@@ -120,11 +135,28 @@ public class RCFileStore extends StoreBase {
   }
 
 
-  private SequenceFile.Metadata createRCFileMetadata(JdbcSourceMetadata jdbcMetadata, Properties prop) {
+  public static SequenceFile.Metadata createRCFileMetadata(
+    JdbcSource source, JdbcSourceMetadata jdbcMetadata, Properties prop) {
     SequenceFile.Metadata metadata = new SequenceFile.Metadata();
-    jdbcMetadata.fillRCFileMetadata(metadata);
 
     metadata.set(new Text("hump.version"), new Text("0.0.1"));
+
+    String names = jdbcMetadata.columnNames;
+    String types = jdbcMetadata.columnHiveTypes;
+    int columns = jdbcMetadata.columnCount;
+
+    List<VirtualColumn> virtualColumns = source.getVirtualColumns();
+    if (virtualColumns != null) {
+      for (VirtualColumn vc : virtualColumns) {
+        ++columns;
+        names += "," + vc.columnName;
+        types += ":" + vc.columnType;
+      }
+    }
+
+    metadata.set(new Text("columns"), new Text(names));
+    metadata.set(new Text("columns.types"), new Text(types));
+
     if (prop != null) {
       Enumeration<Object> keys = prop.keys();
       while (keys.hasMoreElements()) {
@@ -132,8 +164,27 @@ public class RCFileStore extends StoreBase {
         metadata.set(new Text(key), new Text(prop.getProperty(key)));
       }
     }
+
     return metadata;
   }
+
+
+//  private SequenceFile.Metadata createRCFileMetadata2(
+//    JdbcSource source, JdbcSourceMetadata jdbcMetadata, Properties prop) {
+//    SequenceFile.Metadata metadata = new SequenceFile.Metadata();
+//
+//    jdbcMetadata.fillRCFileMetadata(metadata);
+//
+//    metadata.set(new Text("hump.version"), new Text("0.0.1"));
+//    if (prop != null) {
+//      Enumeration<Object> keys = prop.keys();
+//      while (keys.hasMoreElements()) {
+//        String key = (String) keys.nextElement();
+//        metadata.set(new Text(key), new Text(prop.getProperty(key)));
+//      }
+//    }
+//    return metadata;
+//  }
 
 
   public String getFormatId() {
