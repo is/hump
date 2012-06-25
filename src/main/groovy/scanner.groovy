@@ -64,6 +64,7 @@ def getLogTableList(ds) {
 			it.date = it.postfix.replace('_', '')
 			it.target = "${it.ds.gameid}/${it.prefix}/${it.date}/${it.ds.sname}__${it.ds.sid}"
 			it.id = "log.${it.ds.gameid}.${it.prefix}.${it.ds.sname}.${it.date}"
+			it.vc = [['sid', 'strinng', it.ds.sname], ['dt', 'int', it.date]]
 			it.isValid = true
 		} else {
 			it.isValid = false
@@ -85,6 +86,7 @@ def getZ0TableList() {
 			it.date = tablename[-8..-1]
 			it.target = "account/${it.prefix}/${it.date}"
 			it.id = "account.main.${it.prefix}.z0.${it.date}"
+			it.vc = [['ds', 'int', it.date]]
 			it.isValid = true
 		} else {
 			it.isValid = false
@@ -114,7 +116,11 @@ def writeTableToLineJson(Writer writer, entries) {
 			table i.name
 			target i.target
 			id i.id
+			if (i.containsKey('vc')) {
+				vc i.vc
+			}
 		}
+
 		writer.write(json.toString())
 		writer.write("\n")
 	}
