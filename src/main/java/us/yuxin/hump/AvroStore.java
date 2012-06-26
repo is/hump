@@ -88,11 +88,14 @@ public class AvroStore extends StoreBase {
               datum.put(c, rs.getInt(c + 1));
               break;
             case Types.BIGINT:
-            case Types.TIME:
-            case Types.DATE:
             case Types.TIMESTAMP:
               datum.put(c, rs.getLong(c + 1));
               break;
+            case Types.TIME:
+            case Types.DATE:
+              datum.put(c, rs.getString(c + 1));
+              break;
+
             default:
 //              Object o = rs.getObject(c + 1);
 //              System.out.println(o.getClass().getName() + "/" + sqlType + ":" + o.toString());
@@ -225,9 +228,9 @@ public class AvroStore extends StoreBase {
       case Types.LONGNVARCHAR:
       case Types.NVARCHAR:
       case Types.NCHAR:
-        return STRING;
       case Types.DATE:
       case Types.TIME:
+        return STRING;
       case Types.TIMESTAMP:
         return LONG;
       case Types.BINARY:
