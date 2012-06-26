@@ -138,7 +138,10 @@ public class AvroStore extends StoreBase {
       Type type = toAvroType(virtualColumnArray[i].columnType);
       switch(type) {
         case INT:
+          System.out.println("C0:" + v);
+          System.out.println("C1:" + Integer.getInteger(v));
           values[i] = Integer.getInteger(v);
+          System.out.println("C2:" + values[i]);
           break;
 
         case LONG:
@@ -148,7 +151,7 @@ public class AvroStore extends StoreBase {
         default:
           values[i] = v;
       }
-      System.out.println("" + i + ":" + values[i].toString());
+      System.out.println("" + i + ":" + values[i]);
     }
     return values;
   }
