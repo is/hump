@@ -84,7 +84,7 @@ public class AvroStore extends StoreBase {
           } if (columnTypes[c] == Types.TIMESTAMP || columnTypes[c] == Types.DATE || columnTypes[c] == Types.TIME) {
             datum.put(c, rs.getLong(c + 1));
           } else {
-            Object o = rs.getObject( c+ 1);
+            Object o = rs.getObject(c + 1);
             System.out.println(o.getClass().getName() + ":" + o.toString());
             datum.put(c, rs.getObject(c + 1));
           }
