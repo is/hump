@@ -1,6 +1,7 @@
 package us.yuxin.hump;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
@@ -60,4 +61,23 @@ public abstract class StoreBase implements Store {
   public void setLastRealPath(Path lastRealPath) {
     this.lastRealPath = lastRealPath;
   }
+
+
+  protected JdbcSourceMetadata prepareMetadata(JdbcSource source) throws IOException {
+    if (source == null || !source.isReady()) {
+      throw new IOException("JDBC Source is not ready");
+    }
+
+    JdbcSourceMetadata jdbcMetadata = new JdbcSourceMetadata();
+    try {
+      jdbcMetadata.setJdbcSource(source);
+    } catch (SQLException e) {
+      throw new IOException("Can't generate metadata from JDBC source", e);
+    }
+
+    return jdbcMetadata;
+  }
+
+  @Override
+  public void setTask(Object task) { }
 }

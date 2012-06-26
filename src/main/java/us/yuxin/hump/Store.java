@@ -7,6 +7,7 @@ import org.apache.hadoop.fs.Path;
 
 public interface Store {
   void setUseTemporary(boolean useTemporary);
+  void setTask(Object task);
   void store(Path file, JdbcSource source, Properties prop) throws IOException;
   void store(Path file, JdbcSource source, Properties prop, StoreCounter counter) throws IOException;
   Path getLastRealPath();
