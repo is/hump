@@ -88,6 +88,8 @@ public class AvroStore extends StoreBase {
               datum.put(c, rs.getInt(c + 1));
               break;
             case Types.BIGINT:
+              datum.put(c, rs.getLong(c + 1));
+              break;
             case Types.TIMESTAMP:
               datum.put(c, rs.getTimestamp(c + 1).getTime());
               break;
