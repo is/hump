@@ -89,7 +89,7 @@ public class AvroStore extends StoreBase {
               break;
             case Types.BIGINT:
             case Types.TIMESTAMP:
-              datum.put(c, rs.getLong(c + 1));
+              datum.put(c, rs.getTimestamp(c + 1).getTime());
               break;
             case Types.TIME:
             case Types.DATE:
