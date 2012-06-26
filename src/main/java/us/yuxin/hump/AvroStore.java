@@ -70,17 +70,22 @@ public class AvroStore extends StoreBase {
       virtualColumnValues = prepareVirtualColumnValues(virtualColumnArray);
     }
 
-    String[] columnNames = jdbcMetadata.names;
+    int[] columnTypes = jdbcMetadata.types;
+
     try {
       while (rs.next()) {
         GenericRecord datum = new GenericData.Record(schema);
         ++counter.rows;
         for (int c = 0; c < columns; ++c) {
-          datum.put(c, rs.getObject(c + 1));
+          if (columnTypes[c] == Types.BIGINT) {
+            datum.put(c, rs.getLong(c + 1));
+          } else
+            datum.put(c, rs.getObject(c + 1));
         }
 
         if (virtualColumnCount > 0) {
           for (int c = 0; c < virtualColumnCount; ++c) {
+
             datum.put(c + columns, virtualColumnValues[c]);
           }
         }
