@@ -144,6 +144,7 @@ public class AvroStore extends StoreBase {
           System.out.println("C2:" + values[i]);
           break;
 
+
         case LONG:
           values[i] = Long.getLong(v);
           break;
