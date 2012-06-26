@@ -86,7 +86,9 @@ public class HumpDumpExecutor implements HumpExecutor {
     humpUpdate = conf.getBoolean(Hump.CONF_HUMP_UPDATE, false);
 
     String outputFormat = conf.get(Hump.CONF_HUMP_OUTOUT_FORMAT);
-    if (outputFormat.equals("text")) {
+    if (outputFormat.equals("avro")) {
+      store = new AvroStore(fs, conf, codec);
+    } else if (outputFormat.equals("text")) {
       store = new TextStore(fs, conf, codec);
     } else {
       store = new RCFileStore(fs, conf, codec);
@@ -190,6 +192,7 @@ public class HumpDumpExecutor implements HumpExecutor {
       metadata = new JdbcSourceMetadata();
       metadata.setJdbcSource(source);
 
+      store.setTask(task);
       store.store(new Path(realTarget), source, null, singleCounter);
       source.close();
 
