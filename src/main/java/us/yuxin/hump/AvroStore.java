@@ -79,8 +79,11 @@ public class AvroStore extends StoreBase {
         for (int c = 0; c < columns; ++c) {
           if (columnTypes[c] == Types.BIGINT) {
             datum.put(c, rs.getLong(c + 1));
-          } else
+          } else {
+            Object o = rs.getObject( c+ 1);
+            System.out.println(o.getClass().getName() + ":" + o.toString());
             datum.put(c, rs.getObject(c + 1));
+          }
         }
 
         if (virtualColumnCount > 0) {
