@@ -77,7 +77,11 @@ public class AvroStore extends StoreBase {
         GenericRecord datum = new GenericData.Record(schema);
         ++counter.rows;
         for (int c = 0; c < columns; ++c) {
+          int sqlType = columnTypes[c];
+
           if (columnTypes[c] == Types.BIGINT) {
+            datum.put(c, rs.getLong(c + 1));
+          } if (columnTypes[c] == Types.TIMESTAMP || columnTypes[c] == Types.DATE || columnTypes[c] == Types.TIME) {
             datum.put(c, rs.getLong(c + 1));
           } else {
             Object o = rs.getObject( c+ 1);
