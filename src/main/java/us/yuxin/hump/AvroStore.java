@@ -94,8 +94,8 @@ public class AvroStore extends StoreBase {
               datum.put(c, rs.getLong(c + 1));
               break;
             default:
-              Object o = rs.getObject(c + 1);
-              System.out.println(o.getClass().getName() + "/" + sqlType + ":" + o.toString());
+//              Object o = rs.getObject(c + 1);
+//              System.out.println(o.getClass().getName() + "/" + sqlType + ":" + o.toString());
               datum.put(c, rs.getObject(c + 1));
           }
         }
