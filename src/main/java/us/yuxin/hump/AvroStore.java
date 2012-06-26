@@ -77,22 +77,31 @@ public class AvroStore extends StoreBase {
         GenericRecord datum = new GenericData.Record(schema);
         ++counter.rows;
         for (int c = 0; c < columns; ++c) {
-          int sqlType = columnTypes[c];
+          if (rs.getObject(c + 1) == null) {
+            datum.put(c, null);
+            continue;
+          }
 
-          if (sqlType == Types.BIGINT) {
-            datum.put(c, rs.getLong(c + 1));
-          } else if (sqlType == Types.TIMESTAMP || sqlType == Types.DATE || sqlType == Types.TIME) {
-            datum.put(c, rs.getLong(c + 1));
-          } else {
-            Object o = rs.getObject(c + 1);
-            System.out.println(o.getClass().getName() + "/" + sqlType + ":" + o.toString());
-            datum.put(c, rs.getObject(c + 1));
+          int sqlType = columnTypes[c];
+          switch(sqlType) {
+            case Types.INTEGER:
+              datum.put(c, rs.getInt(c + 1));
+              break;
+            case Types.BIGINT:
+            case Types.TIME:
+            case Types.DATE:
+            case Types.TIMESTAMP:
+              datum.put(c, rs.getLong(c + 1));
+              break;
+            default:
+              Object o = rs.getObject(c + 1);
+              System.out.println(o.getClass().getName() + "/" + sqlType + ":" + o.toString());
+              datum.put(c, rs.getObject(c + 1));
           }
         }
 
         if (virtualColumnCount > 0) {
           for (int c = 0; c < virtualColumnCount; ++c) {
-
             datum.put(c + columns, virtualColumnValues[c]);
           }
         }
