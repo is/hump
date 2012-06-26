@@ -220,6 +220,7 @@ public class AvroStore extends StoreBase {
 
 
   private Type toAvroType(String type) {
+    if (type.equalsIgnoreCase("INT")) { return INT; }
     if (type.equalsIgnoreCase("INTEGER")) { return INT; }
     if (type.equalsIgnoreCase("LONG")) { return LONG; }
     if (type.equalsIgnoreCase("BOOLEAN")) { return BOOLEAN; }
