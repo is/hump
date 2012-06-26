@@ -129,6 +129,7 @@ public class AvroStore extends StoreBase {
 
     for (int i = 0; i < values.length; ++i) {
       String v = (String)virtualColumnArray[i].defaultValue;
+      System.out.println("V:" + v);
       if (v == null) {
         values[i] = null;
         continue;
@@ -147,6 +148,7 @@ public class AvroStore extends StoreBase {
         default:
           values[i] = v;
       }
+      System.out.println("" + i + ":" + values[i].toString());
     }
     return values;
   }
