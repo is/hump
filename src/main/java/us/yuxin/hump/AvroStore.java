@@ -238,6 +238,7 @@ public class AvroStore extends StoreBase {
         return LONG;
       case Types.BINARY:
       case Types.VARBINARY:
+      case Types.LONGVARBINARY:
         return BYTES;
       default:
         throw new IllegalArgumentException("Cannot convert SQL type "
