@@ -62,9 +62,9 @@ def getLogTableList(ds) {
 			it.prefix = tokens[0]
 			it.postfix = tokens[1]
 			it.date = it.postfix.replace('_', '')
-			it.target = "${it.ds.gameid}/${it.prefix}/${it.date}/${it.ds.sname}__${it.ds.sid}"
+			it.target = "log/${it.ds.gameid}/${it.prefix}/${it.date}/${it.ds.sname}__${it.ds.sid}"
 			it.id = "log.${it.ds.gameid}.${it.prefix}.${it.ds.sname}.${it.date}"
-			it.vc = [['sid', 'strinng', it.ds.sname], ['dt', 'int', it.date]]
+			it.vc = [['sid', 'string', it.ds.sname], ['dt', 'int', it.date]]
 			it.isValid = true
 		} else {
 			it.isValid = false
@@ -135,7 +135,7 @@ def LogDBNameMap = [
 	'rrd': 'dmbj_log',
 
 	't': 'mmo_log',
-	'l': 'lzr_log',
+//	'l': 'lzr_log',
 	'cq': 'gen_log',
 	'szcsj': 'tr_log',
 ]
