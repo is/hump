@@ -137,7 +137,7 @@ def LogDBNameMap = [
 	't': 'mmo_log',
 	'l': 'lzr_log',
 	'cq': 'gen_log',
-	'szcsj', 'tr_log',
+	'szcsj': 'tr_log',
 ]
 
 // --- Load configuration from properties file
