@@ -24,9 +24,6 @@ public class TextStore extends StoreBase {
 
   @Override
   public void store(Path file, JdbcSource source, Properties prop, StoreCounter counter) throws IOException {
-    if (source == null || !source.isReady()) {
-      throw new IOException("JDBC Source is not ready");
-    }
     setLastRealPath(file);
 
     if (useTemporary) {
@@ -37,12 +34,7 @@ public class TextStore extends StoreBase {
       counter = new StoreCounter();
     }
 
-    JdbcSourceMetadata jdbcMetadata = new JdbcSourceMetadata();
-    try {
-      jdbcMetadata.setJdbcSource(source);
-    } catch (SQLException e) {
-      throw new IOException("Can't generate metadata from JDBC source", e);
-    }
+    JdbcSourceMetadata jdbcMetadata = prepareMetadata(source);
 
     int columns = jdbcMetadata.getColumnCount();
     ResultSet rs = source.getResultSet();

@@ -134,12 +134,10 @@ public class RCFileStore extends StoreBase {
 
     String names = jdbcMetadata.columnNames;
     String types = jdbcMetadata.columnHiveTypes;
-    int columns = jdbcMetadata.columnCount;
 
     List<VirtualColumn> virtualColumns = source.getVirtualColumns();
     if (virtualColumns != null) {
       for (VirtualColumn vc : virtualColumns) {
-        ++columns;
         names += "," + vc.columnName;
         types += ":" + vc.columnType;
       }

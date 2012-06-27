@@ -148,7 +148,7 @@ cli.e(longOpt: 'end', args: 1, argName: 'date', 'End of date range')
 cli.d(longOpt: 'day', args: 1, argName: 'date', 'One day range')
 cli.P(longOpt: 'parallel', args: 1, argName: 'num', 'Parallel task number')
 cli.h(longOpt: 'help', 'Show usage information and quit')
-
+cli.z0('Run in mode z0')
 
 OptionAccessor options = cli.parse(args)
 
@@ -160,6 +160,10 @@ if (options.h) {
 
 String outputFilename = 'hump-tasks.ajs'
 String runMode = "log"
+
+if (options.z0) {
+	runMode = 'z0'
+}
 
 if (options.m) {
 	runMode = options.m
