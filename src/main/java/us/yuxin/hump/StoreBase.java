@@ -80,4 +80,10 @@ public abstract class StoreBase implements Store {
 
   @Override
   public void setTask(Object task) { }
+
+
+  protected void renameTemporary() throws IOException {
+    fs.mkdirs(getLastRealPath().getParent());
+    fs.rename(getLastTempPath(), getLastRealPath());
+  }
 }

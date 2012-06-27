@@ -32,18 +32,7 @@ public class RCFileStore extends StoreBase {
 
   @Override
   public void store(Path file, JdbcSource source, Properties prop, StoreCounter counter) throws IOException {
-    /*
-    if (source == null || !source.isReady()) {
-      throw new IOException("JDBC Source is not ready");
-    }
 
-    JdbcSourceMetadata jdbcMetadata = new JdbcSourceMetadata();
-    try {
-      jdbcMetadata.setJdbcSource(source);
-    } catch (SQLException e) {
-      throw new IOException("Can't generate metadata from JDBC source", e);
-    }
-    */
     JdbcSourceMetadata jdbcMetadata = prepareMetadata(source);
 
     int columns = jdbcMetadata.getColumnCount();
@@ -110,8 +99,7 @@ public class RCFileStore extends StoreBase {
     counter.outBytes = fs.getFileStatus(file).getLen();
 
     if (useTemporary) {
-      fs.mkdirs(getLastRealPath().getParent());
-      fs.rename(getLastTempPath(), getLastRealPath());
+      renameTemporary();
     }
   }
 

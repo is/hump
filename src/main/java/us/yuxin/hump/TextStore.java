@@ -108,8 +108,7 @@ public class TextStore extends StoreBase {
     counter.outBytes = fs.getFileStatus(file).getLen();
 
     if (useTemporary) {
-      fs.mkdirs(getLastRealPath().getParent());
-      fs.rename(getLastTempPath(), getLastRealPath());
+      renameTemporary();
     }
   }
 

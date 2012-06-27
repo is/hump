@@ -219,10 +219,11 @@ public class HumpDumpExecutor implements HumpExecutor {
     task = mapper.readValue(taskInfo.toString(), JsonNode.class);
     setTarget(task.get("target").getTextValue());
 
-    if (humpUpdate) {
-      if (isTargetExist()) {
+    if (isTargetExist()) {
+      if (humpUpdate)
         skipCode = SKIP_CODE_UPDATE;
-      }
+      else
+        fs.delete(new Path(realTarget), true);
     }
 
     if (skipCode == SKIP_CODE_NOSKIP) {
