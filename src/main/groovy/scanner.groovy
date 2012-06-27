@@ -128,7 +128,17 @@ def writeTableToLineJson(Writer writer, entries) {
 
 
 @Field
-def LogDBNameMap = ['rrwar': 'tr_log', 'rrlstx': 'sg2_log',]
+def LogDBNameMap = [
+	'rrwar': 'tr_log',
+	'rrlstx': 'sg2_log',
+	'rrkd': 'tr_log',
+	'rrd': 'dmbj_log',
+
+	't': 'mmo_log',
+	'l': 'lzr_log',
+	'cq': 'gen_log',
+	'szcsj', 'tr_log',
+]
 
 // --- Load configuration from properties file
 @Field
