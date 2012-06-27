@@ -2,6 +2,7 @@ package us.yuxin.hump;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -96,6 +97,11 @@ public class AvroStore extends StoreBase {
             case Types.TIME:
             case Types.DATE:
               datum.put(c, rs.getString(c + 1));
+              break;
+            case Types.BINARY:
+            case Types.VARBINARY:
+            case Types.LONGVARBINARY:
+              datum.put(c, ByteBuffer.wrap(rs.getBytes(c + 1)));
               break;
 
             default:
