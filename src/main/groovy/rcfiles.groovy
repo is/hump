@@ -19,6 +19,12 @@ for (int i = 1; i < columnArray.length; ++i) {
 	print("${columnArray[i]} ${columnTypeArray[i]}")
 }
 
+if (descriptor.vc != null) {
+	for (vc in descriptor.vc) {
+		println(",")
+		print("${vc[0]} ${vc[1]}")
+	}
+}
 println(")")
 println("STORED AS RCFILE")
 println("LOCATION '${location}';")
