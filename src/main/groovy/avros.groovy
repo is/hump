@@ -10,7 +10,7 @@ import org.apache.avro.generic.GenericDatumReader
 
 String tablename = args[0]
 String location = args[1]
-Path path = new Path(args[1]);
+Path path = new Path(args[2]);
 
 Configuration conf = new Configuration();
 FileSystem fs = FileSystem.get(conf);
