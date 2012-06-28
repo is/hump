@@ -206,7 +206,7 @@ public class AvroStore extends StoreBase {
 
     // TODO More table detail.
     String tableName = "block";
-    Schema schema = Schema.createRecord(tableName, null, null, true);
+    Schema schema = Schema.createRecord(tableName, null, null, false);
     schema.setFields(fields);
     return schema;
   }
