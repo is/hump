@@ -98,6 +98,12 @@ public class AvroStore extends StoreBase {
             case Types.DATE:
               datum.put(c, rs.getString(c + 1));
               break;
+
+            case Types.NUMERIC:
+            case Types.DECIMAL:
+              datum.put(c, rs.getString(c + 1));
+              break;
+
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
