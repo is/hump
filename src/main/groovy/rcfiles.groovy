@@ -27,9 +27,9 @@ if (descriptor.vc != null) {
 }
 println(")")
 
-if (descriptor.type == 'rcfile') {
+if (descriptor.format == 'rcfile') {
 	println("STORED AS RCFILE")
-} else if (descriptor.type == 'text') {
+} else if (descriptor.format == 'text') {
 	println("ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\1'")
 	println("STORED AS TEXTFILE")
 }
