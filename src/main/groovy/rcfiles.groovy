@@ -26,5 +26,11 @@ if (descriptor.vc != null) {
 	}
 }
 println(")")
-println("STORED AS RCFILE")
+
+if (descriptor.type == 'rcfile') {
+	println("STORED AS RCFILE")
+} else if (descriptor.type == 'text') {
+	println("ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\1'")
+	println("STORED AS TEXTFILE")
+}
 println("LOCATION '${location}';")
