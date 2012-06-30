@@ -20,18 +20,18 @@ def getDBEntriesList() {
 	}
 }
 
-@TypeChecked
+
 List getMysqlTableList(Map ds, String dbname, Closure revise) {
 	String url = "jdbc:mysql://${ds.host}:${ds.port}/information_schema";
 	Sql sql = Sql.newInstance(url, ds.user, ds.pass) as Sql
 	String dateStr = conf.get('date')
 	String query = null;
 
-	String baseQuery = "SELECT TABLE_NAME as name FROM information_schema.TABLES WHERE TABLE_SCHEMA = :dbname"
+	String baseQuery = "SELECT TABLE_NAME as name, TABLE_ROWS as rows FROM information_schema.TABLES WHERE TABLE_SCHEMA = :dbname"
 
-	if (conf["skip.empty.table"] != null) {
-		baseQuery += "AND TABLE_ROWS = 0"
-	}
+//	if (conf["skip.empty.table"] != null) {
+//		baseQuery += " AND TABLE_ROWS <> 0"
+//	}
 
 	if (dateStr == null) {
 		query = baseQuery;
@@ -61,7 +61,9 @@ def getLogTableList(ds) {
 		return null;
 	String logDBName = LogDBNameMap[ds.gameid]
 	return getMysqlTableList(ds, logDBName) {it ->
-		if (it.name.contains('_log_')) {
+		if (it.rows == 0) {
+			it.isValid = false
+		} else if (it.name.contains('_log_')) {
 			String[] tokens = (it.name as String).split('_log_', 2)
 			it.prefix = tokens[0]
 			it.postfix = tokens[1]
@@ -120,6 +122,7 @@ def writeTableToLineJson(Writer writer, entries) {
 			table i.name
 			target i.target
 			id i.id
+			rows i.rows
 			if (i.containsKey('vc')) {
 				vc i.vc
 			}
