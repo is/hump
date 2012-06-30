@@ -61,7 +61,7 @@ def getLogTableList(ds) {
 		return null;
 	String logDBName = LogDBNameMap[ds.gameid]
 	return getMysqlTableList(ds, logDBName) {it ->
-		if (it.rows == 0) {
+		if (it.rows == 0 && conf['skip.empty.table']) {
 			it.isValid = false
 		} else if (it.name.contains('_log_')) {
 			String[] tokens = (it.name as String).split('_log_', 2)
