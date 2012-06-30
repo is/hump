@@ -4,6 +4,7 @@
 import groovy.sql.Sql
 import groovy.transform.Field
 import groovyx.gpars.GParsPool
+import groovy.transform.TypeChecked
 
 def getDBEntriesList() {
 	Sql sql = Sql.newInstance(conf["db.source.url"],
@@ -19,24 +20,27 @@ def getDBEntriesList() {
 	}
 }
 
-
+@TypeChecked
 List getMysqlTableList(Map ds, String dbname, Closure revise) {
 	String url = "jdbc:mysql://${ds.host}:${ds.port}/information_schema";
 	Sql sql = Sql.newInstance(url, ds.user, ds.pass) as Sql
 	String dateStr = conf.get('date')
 	String query = null;
 
+	String baseQuery = "SELECT TABLE_NAME as name FROM information_schema.TABLES WHERE TABLE_SCHEMA = :dbname"
+
+	if (conf["skip.empty.table"] != null) {
+		baseQuery += "AND TABLE_ROWS = 0"
+	}
+
 	if (dateStr == null) {
-		query = "SELECT TABLE_NAME as name FROM information_schema.TABLES WHERE TABLE_SCHEMA = :dbname"
+		query = baseQuery;
 	} else if (dateStr.length() == 8) {
 		dateStr2 = dateStr[0, 1, 2, 3] + "_" + dateStr[4, 5] + "_" + dateStr[6, 7]
-
-		query = "SELECT TABLE_NAME as name FROM  information_schema.TABLES WHERE TABLE_SCHEMA = :dbname AND " +
-			"(TABLE_NAME LIKE '%_${dateStr}' OR TABLE_NAME LIKE '%_${dateStr2}')"
+		query = baseQuery + " AND (TABLE_NAME LIKE '%_${dateStr}' OR TABLE_NAME LIKE '%_${dateStr2}')"
 	} else if (dateStr.length() == 6) {
 		dateStr2 = dateStr[0, 1, 2, 3] + "_" + dateStr[4, 5]
-		query = "SELECT TABLE_NAME as name FROM  information_schema.TABLES WHERE TABLE_SCHEMA = :dbname AND " +
-			"(TABLE_NAME LIKE '%_${dateStr}%' OR TABLE_NAME LIKE '%_${dateStr2}_%')"
+		query = baseQuery + " AND TABLE_NAME LIKE '%_${dateStr}%' OR TABLE_NAME LIKE '%_${dateStr2}_%')"
 	}
 
 	def rows = sql.rows(query, [dbname: dbname])
@@ -158,6 +162,8 @@ cli.e(longOpt: 'end', args: 1, argName: 'date', 'End of date range')
 cli.d(longOpt: 'day', args: 1, argName: 'date', 'One day range')
 cli.P(longOpt: 'parallel', args: 1, argName: 'num', 'Parallel task number')
 cli.h(longOpt: 'help', 'Show usage information and quit')
+cli.E(longOpt: 'skipemptytable', 'Skip empty tables');
+
 cli.z0('Run in mode z0')
 
 OptionAccessor options = cli.parse(args)
@@ -173,6 +179,10 @@ String runMode = "log"
 
 if (options.z0) {
 	runMode = 'z0'
+}
+
+if (options.E) {
+	conf['skip.empty.table'] = true;
 }
 
 if (options.m) {
