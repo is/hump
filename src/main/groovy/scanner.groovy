@@ -149,15 +149,10 @@ def Get__DataTeamDataLogList() {
 		String tname = it['name'] as String;
 		String dbname = it['dbname'] as String;
 
-		println "GM: ${tname}, ${dbname}";
-
-		if (!(tname ==~ /_\d{8}$/)) {
-			println "GR: ${tname}";
+		if (!(tname =~ /_\d{8}$/)) {
 			it.isValid = false;
 			return null;
 		}
-
-		println "GE: ${tname}, ${dbname}";
 
 		it.prefix = tname[0..-10];
 		it.date = tname[-8..-1];
@@ -184,7 +179,6 @@ def Get__DataTeamDataLogList() {
 			it.isValid = true;
 			it.target = "datateam/logdata/${tag}/${it.date}";
 			it.id = "dateteam.logdata.${tag}.${it.date}";
-			println  "OK: ${it.target}";
 			return it;
 		} else {
 			it.isValid = false;
