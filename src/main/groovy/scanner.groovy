@@ -1,10 +1,16 @@
 @Grab(group = 'org.codehaus.gpars', module = 'gpars', version = '0.12')
 @GrabConfig(systemClassLoader = true)
-@Grab(group = 'mysql', module = 'mysql-connector-java', version = '5.1.19') import groovy.json.JsonBuilder
+@Grab(group = 'mysql', module = 'mysql-connector-java', version = '5.1.19')
+@Grab(group='joda-time', module='joda-time', version='2.1')
+
+import groovy.json.JsonBuilder
 import groovy.sql.Sql
 import groovy.transform.Field
-import groovyx.gpars.GParsPool
 import groovy.transform.TypeChecked
+
+import groovyx.gpars.GParsPool
+import org.joda.time.LocalDate
+
 
 def getDBEntriesList() {
 	Sql sql = Sql.newInstance(conf["db.source.url"],
@@ -21,6 +27,36 @@ def getDBEntriesList() {
 }
 
 
+List<Map> getMysqlTableList2(Map ds, Closure revise) {
+	String url = "jdbc:mysql://${ds.host}:${ds.port}/information_schema";
+	Sql sql = Sql.newInstance(url, ds.user, ds.pass) as Sql
+	String dateStr = conf.get('date')
+	String query = null;
+
+	String baseQuery = "SELECT TABLE_NAME as name, TABLE_SCHEMA as dbname, TABLE_ROWS as rows FROM information_schema.TABLES "
+
+	if (dateStr == null) {
+		query = baseQuery;
+	} else if (dateStr.length() == 8) {
+		dateStr2 = dateStr[0, 1, 2, 3] + "_" + dateStr[4, 5] + "_" + dateStr[6, 7]
+		query = baseQuery + " WHERE (TABLE_NAME LIKE '%_${dateStr}' OR TABLE_NAME LIKE '%_${dateStr2}')"
+	} else if (dateStr.length() == 6) {
+		dateStr2 = dateStr[0, 1, 2, 3] + "_" + dateStr[4, 5]
+		query = baseQuery + " WHERE TABLE_NAME LIKE '%_${dateStr}%' OR TABLE_NAME LIKE '%_${dateStr2}_%')"
+	}
+
+	def rows = sql.rows(query)
+	sql.close()
+	return rows.collect { it ->
+		it.ds = ds
+		if (revise != null) {
+			return revise(it);
+		}
+		it
+	} .grep { it != null};
+}
+
+
 List getMysqlTableList(Map ds, String dbname, Closure revise) {
 	String url = "jdbc:mysql://${ds.host}:${ds.port}/information_schema";
 	Sql sql = Sql.newInstance(url, ds.user, ds.pass) as Sql
@@ -28,10 +64,6 @@ List getMysqlTableList(Map ds, String dbname, Closure revise) {
 	String query = null;
 
 	String baseQuery = "SELECT TABLE_NAME as name, TABLE_ROWS as rows FROM information_schema.TABLES WHERE TABLE_SCHEMA = :dbname"
-
-//	if (conf["skip.empty.table"] != null) {
-//		baseQuery += " AND TABLE_ROWS <> 0"
-//	}
 
 	if (dateStr == null) {
 		query = baseQuery;
@@ -56,7 +88,7 @@ List getMysqlTableList(Map ds, String dbname, Closure revise) {
 }
 
 
-def getLogTableList(ds) {
+def Get__GameLogTableList(ds) {
 	if (!LogDBNameMap.containsKey(ds.gameid))
 		return null;
 	String logDBName = LogDBNameMap[ds.gameid]
@@ -79,7 +111,7 @@ def getLogTableList(ds) {
 }
 
 
-def getZ0TableList() {
+def Get__Z0TableList() {
 	def db = [
 		host: conf['z0.host'], port: conf['z0.port'],
 		user: conf['z0.user'], pass: conf['z0.pass'],
@@ -100,6 +132,60 @@ def getZ0TableList() {
 	}
 }
 
+
+Map getDatabaseConf(String name) {
+	return ['host', 'port', 'user', 'pass'].collectEntries {
+		[it, conf[name + "." + it]];
+	}
+}
+
+
+def Get__DataTeamDataLogList() {
+	Map dbconf = getDatabaseConf("data-logdata");
+	String dateStr = conf.get('date');
+	String todayStr = LocalDate.now().toString('yyyyMMdd');
+
+	return getMysqlTableList2(dbconf) { it ->
+		String tname = it['name'] as String;
+		String dbname = it['dbname'] as String;
+
+		if (!tname =~ /_\d{8}$/) {
+			it.isValid = false;
+			return null;
+		}
+
+		it.prefix = tname[0..-10];
+		it.date = tname[-8..-1];
+
+		String tag = null;
+
+		if (dateStr == null && it.date == todayStr) {
+			it.isValid = false;
+			return null;
+		}
+
+		if (dbname == 'ane_mac' && it.prefix == 'mac') {
+			tag = "ane-mac";
+		} else if (dbname == 'game_mac' && it.prefix == 'mac') {
+			tag = 'game-mac';
+		} else if (dbname == 'log_data' && it.prefix == 'log_ip') {
+			tag = 'log-ip';
+		} else if (dbname == 'log_data_renren' && it.prefix == 'log_data') {
+			tag = 'log-data';
+		}
+
+		if (tag != null) {
+			it.vc = [['ds', 'int', it.date]];
+			it.isValid = true;
+			it.target = "datateam/logdata/${tag}/${it.date}";
+			it.id = "dateteam.logdata.${tag}.${it.date}";
+			return it;
+		} else {
+			it.isValid = false;
+			return null;
+		}
+	}
+}
 
 def writeTableToLineJson(Writer writer, entries) {
 	if (entries == null)
@@ -178,7 +264,7 @@ if (options.h) {
 
 
 String outputFilename = 'hump-tasks.ajs'
-String runMode = "log"
+String runMode = "gamelog"
 
 if (options.z0) {
 	runMode = 'z0'
@@ -205,15 +291,18 @@ if (options.d) {
 
 def res = null
 
-if (runMode == 'log') {
+if (runMode == 'gamelog') {
 	println "Running in SCAN LOG DB mode."
 	def dbs = getDBEntriesList()
 	GParsPool.withPool(poolSize) {
-		res = dbs.collectParallel { getLogTableList(it) }.grep { it != null && it.size() > 0}
+		res = dbs.collectParallel { Get__GameLogTableList(it) }.grep { it != null && it.size() > 0}
 	}
 } else if (runMode == 'z0') {
 	println "Running in Z0 mode."
-	res = [getZ0TableList(),]
+	res = [Get__Z0TableList(),]
+} else if (runMode == 'logdata' || runMode == 'dateteam.logdata') {
+	println "Running in datateam.logdata";
+	res = [Get__DataTeamDataLogList(),];
 }
 
 println res.size()
