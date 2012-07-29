@@ -1,5 +1,8 @@
 package us.yuxin.hump.cli;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.sql.SQLException;
 
@@ -11,6 +14,8 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 import us.yuxin.hump.JdbcSource;
 import us.yuxin.hump.JdbcSourceMetadata;
 
@@ -43,6 +48,8 @@ public class Gen {
   final static String O_TABLE = "table";
   final static String O_TARGET = "target";
   final static String O_USERNAME = "username";
+  final static String O_HUMP_LOGFILE = "humpfile";
+  final static String O_HUMP_TABLEID = "humptableid";
 
 
   private void prepareCmdlineOptions() {
@@ -65,6 +72,9 @@ public class Gen {
     addOption("f", O_FLAGS, true, "Flags for hive DML statement\ne:EXTERNAL, i:IF NOT EXIST, d:DROP TABLE", "flags");
     addOption("e", O_EXTERNAL, false, "External hive table");
     addOption("P", O_PARTITION, true, "Hive table partition, v:type,v:type ...");
+
+    addOption("S", O_HUMP_LOGFILE, true, "Hump full log filename.", "logfile");
+    addOption("I", O_HUMP_TABLEID, true, "Hump table id", "tid");
   }
 
 
@@ -85,6 +95,10 @@ public class Gen {
 
     parseCmdline(OptionsFileUtils.expandArguments(args));
 
+    if (cmdline.hasOption(O_HUMP_TABLEID) && cmdline.hasOption(O_HUMP_LOGFILE)) {
+      genByHumpLogMetaFile();
+    }
+
     if (cmdline.hasOption(O_COLUMNS) && cmdline.hasOption(O_HIVE_TYPES)) {
       genByHiveColumnDescriptor();
     }
@@ -93,6 +107,63 @@ public class Gen {
       genByDatasource();
     }
   }
+
+
+  private void genByHumpLogMetaFile() throws IOException {
+    String logFile = cmdline.getOptionValue(O_HUMP_LOGFILE);
+    String tableId = cmdline.getOptionValue(O_HUMP_TABLEID);
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode tableInfo = null;
+
+    BufferedReader br = new BufferedReader(new FileReader(logFile));
+
+    while (true) {
+      String line = br.readLine();
+
+      if (line == null)
+        break;
+
+      JsonNode root = mapper.readTree(line);
+      if (root.has("id")) {
+        if (root.get("id").getTextValue().contains(tableId)) {
+          tableInfo = root;
+          break;
+        }
+      }
+    }
+
+    if (tableInfo == null) {
+      System.out.println(tableId + "is not found in " + logFile);
+      return;
+    }
+
+    String columns = tableInfo.get("columns").getTextValue();
+    String hivetypes = tableInfo.get("columnTypes").getTextValue();
+
+    if (tableInfo.has("vc")) {
+      JsonNode vcNode = tableInfo.get("vc");
+      for (int i = 0; i < vcNode.size(); ++i) {
+        JsonNode vcInfo = vcNode.get(i);
+
+        columns += "," + vcInfo.get(0).getTextValue();
+        hivetypes += ":" + vcInfo.get(1).getTextValue();
+      }
+    }
+
+    columnNames = Iterables.toArray(Splitter.on(",").split(columns), String.class);
+    columnTypes = Iterables.toArray(Splitter.on(":").split(hivetypes), String.class);
+
+    if (columnNames.length != columnTypes.length) {
+      errorMsg = "Column names/types is not match.\n" +
+        "names: " + columns + " " + columnNames.length + "\n" +
+        "types: " + hivetypes + " " + columnTypes.length + "\n";
+      errorExit(1);
+    }
+
+    buildTable();
+    // System.exit(0);
+  }
+
 
   private void genByDatasource() throws ClassNotFoundException, SQLException {
     String url = cmdline.getOptionValue(O_SOURCE);
@@ -179,7 +250,6 @@ public class Gen {
       tableName = "t0";
   }
 
-
   private void parseCmdline(String args[]) throws ParseException {
     GnuParser parser = new GnuParser();
     cmdline = parser.parse(options, args, null, false);
@@ -187,13 +257,13 @@ public class Gen {
 
 
   private void addOption(String shortOpt, String longOpt, boolean hasArg, String description) {
-    Option o = new Option(shortOpt,longOpt, hasArg, description);
+    Option o = new Option(shortOpt, longOpt, hasArg, description);
     options.addOption(o);
   }
 
 
   private void addOption(String shortOpt, String longOpt, boolean hasArg, String description, String argName) {
-    Option o = new Option(shortOpt,longOpt, hasArg, description);
+    Option o = new Option(shortOpt, longOpt, hasArg, description);
     o.setArgName(argName);
     options.addOption(o);
   }
