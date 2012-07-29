@@ -50,6 +50,7 @@ public class Gen {
   final static String O_USERNAME = "username";
   final static String O_HUMP_LOGFILE = "humpfile";
   final static String O_HUMP_TABLEID = "humptableid";
+  final static String O_LOCATION = "location";
 
 
   private void prepareCmdlineOptions() {
@@ -75,6 +76,7 @@ public class Gen {
 
     addOption("S", O_HUMP_LOGFILE, true, "Hump full log filename.", "logfile");
     addOption("I", O_HUMP_TABLEID, true, "Hump table id", "tid");
+    addOption("l", O_LOCATION, true, "Hive table location", "path");
   }
 
 
@@ -328,7 +330,11 @@ public class Gen {
       out.println(sb.toString());
     }
 
-    out.println("STORED AS RCFile;");
+    out.println("STORED AS RCFile");
+    if (cmdline.hasOption(O_LOCATION)) {
+      out.format("LOCATION '%s'\n", cmdline.getOptionValue(O_LOCATION));
+    }
+    out.println(";");
   }
 
   void setOutStream(PrintStream out) {
