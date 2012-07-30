@@ -63,10 +63,10 @@ public class Hump extends Configured implements Tool {
   BlockingQueue<String> feedbackQueue;
 
   String argv[];
-  HumpFeeder feeder;
+  Feeder feeder;
   Thread feederThread;
 
-  HumpCollector collector;
+  Collector collector;
   Thread collectorThread;
 
 
@@ -124,7 +124,7 @@ public class Hump extends Configured implements Tool {
       sources = new File[]{new File(conf.get(CONF_HUMP_PATH_TASKFILE, "hump-tasks.json"))};
     }
 
-    feeder = new HumpFeeder();
+    feeder = new Feeder();
     feeder.setup(conf, sources, taskQueue, feedbackQueue,
       conf.getInt(CONF_HUMP_TASKS, HUMP_TASKS));
 
@@ -136,7 +136,7 @@ public class Hump extends Configured implements Tool {
 
 
   private void collectorInit() {
-    collector = new HumpCollector();
+    collector = new Collector();
     collector.setup(getConf(), feedbackQueue);
 
     collectorThread = new Thread(collector);

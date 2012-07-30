@@ -18,7 +18,7 @@ import org.codehaus.jackson.map.ObjectMapper;
  * hump-log-summary.json
  * hump-log-failure.json
  */
-public class HumpCollector implements Runnable {
+public class Collector implements Runnable {
   Configuration conf;
 
   int taskCounter;
@@ -28,7 +28,7 @@ public class HumpCollector implements Runnable {
   int feederTasks;
 
   BlockingQueue<String> feedbackQueue;
-  Log log = LogFactory.getLog(HumpCollector.class);
+  Log log = LogFactory.getLog(Collector.class);
 
   FileWriter fullLog, summaryLog, failureLog;
 

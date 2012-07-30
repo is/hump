@@ -3,9 +3,7 @@ package us.yuxin.hump;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 
-import com.hazelcast.client.ClientConfig;
 import com.hazelcast.client.HazelcastClient;
-import com.hazelcast.config.GroupConfig;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -25,7 +23,7 @@ public class HumpTaskRecordReader extends RecordReader<Text, Text> {
     serial = 0;
     Configuration conf = context.getConfiguration();
 
-    HazelcastClient client = HumpGridClient.getClient(conf);
+    HazelcastClient client = GridClient.getClient(conf);
     jobQueue = client.getQueue(Hump.HUMP_HAZELCAST_TASK_QUEUE);
 
     this.context = context;
@@ -62,6 +60,6 @@ public class HumpTaskRecordReader extends RecordReader<Text, Text> {
   @Override
   public void close() throws IOException {
     System.out.println("HumpTaskRecordReader.close");
-    HumpGridClient.shutdown();
+    GridClient.shutdown();
   }
 }

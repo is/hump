@@ -13,7 +13,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 
-public class HumpFeeder implements Runnable {
+public class Feeder implements Runnable {
   private int parallel;
 
   private BlockingQueue<String> taskQueue;

@@ -21,7 +21,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ObjectNode;
 
 
-public class HumpDumpExecutor implements HumpExecutor {
+public class DumpExecutor implements Executor {
   FileSystem fs;
   Store store;
   CompressionCodec codec;
@@ -70,7 +70,7 @@ public class HumpDumpExecutor implements HumpExecutor {
     this.context = context;
 
     conf = context.getConfiguration();
-    client = HumpGridClient.getClient(conf);
+    client = GridClient.getClient(conf);
     feedbackQueue = client.getQueue(Hump.HUMP_HAZELCAST_FEEDBACK_QUEUE);
 
     fs = FileSystem.get(context.getConfiguration());
@@ -208,7 +208,7 @@ public class HumpDumpExecutor implements HumpExecutor {
 
   @Override
   public void run(Mapper.Context context, Text serial, Text taskInfo) throws IOException, InterruptedException {
-    System.out.println("HumpDumpExecutor.run -- " + serial.toString() + ":" + taskInfo.toString());
+    System.out.println("DumpExecutor.run -- " + serial.toString() + ":" + taskInfo.toString());
 
     singleCounter.reset();
     skipCode = SKIP_CODE_NOSKIP;

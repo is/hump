@@ -5,7 +5,7 @@ import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.config.GroupConfig;
 import org.apache.hadoop.conf.Configuration;
 
-public class HumpGridClient {
+public class GridClient {
   static HazelcastClient client;
 
   public static synchronized  HazelcastClient getClient(Configuration conf) {

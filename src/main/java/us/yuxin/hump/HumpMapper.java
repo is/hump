@@ -11,7 +11,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 
 public class HumpMapper extends Mapper<Text, Text, Text, NullWritable> {
   private static Log log = LogFactory.getLog(HumpMapper.class);
-  private HumpExecutor task;
+  private Executor task;
 
   @Override
   protected void map(Text key, Text value, Context context) throws IOException, InterruptedException {
@@ -25,7 +25,7 @@ public class HumpMapper extends Mapper<Text, Text, Text, NullWritable> {
 
     super.setup(context);
     try {
-      task = (HumpExecutor) Class.forName(conf.get(Hump.CONF_HUMP_TASK_CLASS)).newInstance();
+      task = (Executor) Class.forName(conf.get(Hump.CONF_HUMP_TASK_CLASS)).newInstance();
       task.setup(context);
     } catch (ClassNotFoundException e) {
       e.printStackTrace();
